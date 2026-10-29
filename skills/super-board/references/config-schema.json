@@ -31,6 +31,26 @@
   // only; the dispatcher refuses to run (exit 78) unless set here.
   "worker_backend": "workflow",
 
+  // ── This fork (suber-super-board): vendored skill sets ──────────────────
+  // Which skill set guides the six lifecycle steps (Plan · Design · Build ·
+  // Test · Deploy · Maintain), chosen at onboard step 2. "named" = one set for
+  // every step; "custom" = per-step set, "" on a step means the super-board
+  // loop covers it. The rendered map lives in .claude/super-board/skill-map.json
+  // and the AGENTS.md `super-board:skill-map` block; the raw install record is
+  // .agents/skill-sets.json.
+  "skill_sets": {
+    "mode": "named",            // "named" | "custom"
+    "named": "pstack",          // mattpocock | pstack | agent-skills (mode "named")
+    "steps": null               // mode "custom": {"plan": "mattpocock", …, "maintain": ""}
+  },
+
+  // Agent CLIs the skills must reach (onboard step 3). claude is always on —
+  // the board pack itself lives in .claude/. zcode/codex/opencode read
+  // .agents/skills natively; copilot and any "other" agent get the AGENTS.md
+  // pass-through notes.
+  "agents": ["claude", "codex"],
+  "other_agents": "",           // free-text agent names from onboard's "Other" box
+
   // Default model ladder for lane workers, indexed by card complexity from
   // the classify router. Overridden per run by `super-board run --low|--high`.
   //   "low"    — haiku (low) / sonnet (medium) / opus (high)

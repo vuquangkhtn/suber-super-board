@@ -43,8 +43,8 @@ merge with a hand-off; a card labelled `qa` skips Building.
 
 ## Onboarding
 
-`/super-board onboard` is an 8-step wizard. Each step opens with a numbered agenda strip and
-`N of 8 · <emoji> <Name> — <why>`, then one question with the recommended answer first.
+`/super-board onboard` is a 10-step wizard (this fork adds 🧩 Skills and 🤖 Agents). Each step opens with a numbered agenda strip and
+`N of 10 · <emoji> <Name> — <why>`, then one question with the recommended answer first.
 
 | # | Step | What happens |
 |---|---|---|

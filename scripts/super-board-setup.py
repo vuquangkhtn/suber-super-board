@@ -5,8 +5,10 @@ Onboard asks the questions; this script finds things out and fixes the must-have
 so step 1 (Checks) can say "Fixed for you" without asking anything.
 
     super-board-setup.py check   [--root DIR] [--pack DIR]            what is missing / old (read-only)
-    super-board-setup.py fix     [--root DIR] [--pack DIR] [--no-helpers] [--dry-run]
-                                                                       apply every must-have, then re-check
+    super-board-setup.py fix     [--root DIR] [--pack DIR] [--no-helpers] [--sets=a,b] [--hosts=a,b] [--dry-run]
+                                                                       apply every must-have, then re-check;
+                                                                       --sets/--hosts pass through to install.sh
+                                                                       (this fork's vendored skill sets)
     super-board-setup.py migrate-config <config.json> [--dry-run]     old config keys → v3 keys
     super-board-setup.py names   [--root DIR]                          two board-name suggestions
     super-board-setup.py branch  [--root DIR]                          branches, deploy source, recommendation
@@ -311,11 +313,17 @@ def check(root, pack):
             needs.append({"kind": "tool", "name": t, "why": why, "command": cmd})
     helpers = helper_skills_present(root)
     git = is_git_repo(root)
+    # What install.sh put into .agents/skills (this fork): vendored sets + wired hosts.
+    ssrec = load_json(os.path.join(root, ".agents", "skill-sets.json")) or {}
+    skill_sets = {"names": [s.get("name") for s in ssrec.get("sets", [])],
+                  "hosts": ssrec.get("hosts", [])}
     ok = []
     if not missing:
         ok.append("super-board skills, scripts and board engine present")
         if hook_files:
             ok.append(f"{len(hook_files)} safety guards on")
+    if skill_sets["names"]:
+        ok.append("skill sets installed: " + ", ".join(skill_sets["names"]))
     if git:
         ok.append("git repo found")
     if helpers:
@@ -326,7 +334,8 @@ def check(root, pack):
         "upgrade": older, "from": from_v or ("older" if older else None),
         "added_skills": upgrade_rec.get("added_skills", []),
         "missing": missing, "old_dirs": old_dirs, "configs": configs, "git": git,
-        "helper_skills": helpers, "needs": needs, "os": fam, "ok": ok, "green": not red,
+        "helper_skills": helpers, "skill_sets": skill_sets,
+        "needs": needs, "os": fam, "ok": ok, "green": not red,
     }
 
 
@@ -342,7 +351,7 @@ def backup(root, paths, stamp):
     return os.path.relpath(dest, root) + "/"
 
 
-def fix(root, pack, helpers=True, dry=False):
+def fix(root, pack, helpers=True, dry=False, sets=None, hosts=None):
     before = check(root, pack)
     fixed, notes = [], []
     claude = os.path.join(root, ".claude")
@@ -353,14 +362,26 @@ def fix(root, pack, helpers=True, dry=False):
     if not dry and (before["missing"] or before["old_dirs"] or before["configs"] or before["upgrade"]):
         bdir = backup(root, to_backup, stamp)
 
-    if before["missing"]:
+    # `sets` forces the (re)install even when the board pack itself is present:
+    # onboard's 🧩 Skills step uses it right after the user picks a set.
+    if before["missing"] or sets:
         if not pack:
             return {**before, "fixed": [], "error": "pack-not-found"}
         if not dry:
-            r = run(["bash", os.path.join(pack, "install.sh"), root],
-                    input="", cwd=root)
+            cmd = ["bash", os.path.join(pack, "install.sh")]
+            if sets:
+                cmd.append(f"--sets={sets}")
+            if hosts:
+                cmd.append(f"--hosts={hosts}")
+            cmd.append(root)
+            r = run(cmd, input="", cwd=root)
             if r.returncode != 0:
                 return {**before, "fixed": fixed, "error": "install.sh failed: " + (r.stderr or r.stdout)[-300:]}
+            rec = load_json(os.path.join(root, ".agents", "skill-sets.json"))
+            if sets and rec:
+                fixed.append("skill sets installed: " + ", ".join(
+                    f"{s['name']} ({len(s.get('installed', []))})"
+                    for s in rec.get("sets", []) if s["name"] in sets.split(",")))
             rec = load_json(os.path.join(claude, "super-board", "upgrade.json")) or {}
             before["added_skills"] = rec.get("added_skills", before["added_skills"])
         if before["upgrade"]:
@@ -939,7 +960,10 @@ def main(argv):
     try:
         if cmd in ("check", "fix"):
             pack = find_pack(flag(rest, "--pack"))
-            res = check(root, pack) if cmd == "check" else fix(root, pack, "--no-helpers" not in rest, dry)
+            sets = flag(rest, "--sets")
+            hosts = flag(rest, "--hosts")
+            res = check(root, pack) if cmd == "check" else fix(
+                root, pack, "--no-helpers" not in rest, dry, sets=sets, hosts=hosts)
             if res.get("error") == "pack-not-found":
                 print(json.dumps(res, indent=1))
                 return 66

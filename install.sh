@@ -249,12 +249,15 @@ def normalize_shared_refs(dest: Path):
             f.write_text(text.replace("../../../references/", "../../references/"))
 
 record = {"version": 1, "hosts": hosts, "installed_at": time.strftime("%Y-%m-%dT%H:%M:%S"), "sets": []}
+prev_sets = {s["name"]: s for s in prev.get("sets", [])}
+current_names = set()
 for setname in [s for s in sets_arg.split(",") if s]:
     meta = registry["sets"].get(setname)
     if meta is None:
         known = ", ".join(sorted(registry["sets"]))
         print(f"    ✗ unknown skill set: {setname} (use {known})", file=sys.stderr)
         sys.exit(64)
+    current_names.add(setname)
     setdir = repo / meta["dir"]
     nested = meta.get("layout") == "nested"
     src_root = setdir / meta.get("nested_skills_dir", "skills") if nested else setdir
@@ -303,7 +306,18 @@ for setname in [s for s in sets_arg.split(",") if s]:
         "name": setname, "title": meta.get("title", setname), "source": meta.get("source", ""),
         "pinned_ref": meta.get("pinned_ref", ""), "license": meta.get("license", ""),
         "installed": installed, "skipped": skipped,
+        # Step mapping filtered to what actually landed, so the target record is
+        # self-sufficient: onboard's skill-map never needs the original registry.
+        "steps": {step: [s for s in meta.get("steps", {}).get(step, []) if s in installed]
+                  for step in registry.get("lifecycle_steps", [])},
+        "anytime": [s for s in meta.get("anytime", []) if s in installed],
+        "maintain_fallback": meta.get("maintain_fallback", ""),
     })
+# A set installed by an earlier run keeps its record entry: its files are still
+# on disk, so the skill-map must keep describing (and refreshing) them.
+for name, entry in prev_sets.items():
+    if name not in current_names:
+        record["sets"].append(entry)
 tmp = record_path.with_suffix(".json.tmp")
 tmp.write_text(json.dumps(record, indent=2) + "\n")
 os.replace(tmp, record_path)

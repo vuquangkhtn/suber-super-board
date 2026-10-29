@@ -25,9 +25,18 @@ the lossless-coverage check and the size check. Stdlib only.
                                                 in a target) or `dropped` (the user's reason).
                                                 Exit 1 listing each unmapped unit
     check    --file F [--max-lines 200]         one marker pair at most, ≤ max lines. Exit 1 if not
+    skill-map [--root .] [--file AGENTS.md]     from .agents/skill-sets.json (what install.sh put
+                                                down) plus the chosen mapping (--named SET for a
+                                                whole-set choice, --steps FILE for custom
+                                                {"plan":"pstack",...}) and --agents a,b:
+                                                write .claude/super-board/skill-map.json and
+                                                refresh the <!-- super-board:skill-map --> block
+                                                in AGENTS.md. Prints created | updated | unchanged
 
 Markers: `<!-- super-board:begin vX.Y.Z (managed; edits inside are overwritten on
-upgrade) -->` … `<!-- super-board:end -->`. Exit codes: 0 ok, 1 check failed,
+upgrade) -->` … `<!-- super-board:end -->`, plus the independent
+`<!-- super-board:skill-map begin (managed) -->` … `<!-- super-board:skill-map end -->`
+pair written by `skill-map`. Exit codes: 0 ok, 1 check failed,
 2 refused / bad input, 64 usage.
 """
 from __future__ import annotations
@@ -48,9 +57,25 @@ DEFAULT_TEMPLATE = HERE.parent / "skills" / "super-board" / "references" / "agen
 DEFAULT_VERSION_FILE = HERE.parent / "skills" / "super-board" / "VERSION"
 BEGIN_RE = re.compile(r"^<!-- super-board:begin\b.*-->\s*$")
 END_RE = re.compile(r"^<!-- super-board:end -->\s*$")
+MAP_BEGIN_RE = re.compile(r"^<!-- super-board:skill-map begin\b.*-->\s*$")
+MAP_END_RE = re.compile(r"^<!-- super-board:skill-map end -->\s*$")
 INSTRUCTION_FILES = ["AGENTS.md", "CLAUDE.md", ".claude/CLAUDE.md", "CLAUDE.local.md",
                      "GEMINI.md", ".cursorrules", ".github/copilot-instructions.md"]
 POINTER = "@AGENTS.md"
+LIFECYCLE_STEPS = ["plan", "design", "build", "test", "deploy", "maintain"]
+STEP_TITLES = {"plan": "Plan", "design": "Design", "build": "Build",
+               "test": "Test", "deploy": "Deploy", "maintain": "Maintain"}
+# How each agent reaches an installed skill. copilot and other have no skill
+# loader — AGENTS.md (this block) is the pass-through, which is why the block
+# exists even for hosts that record nothing else.
+AGENT_NOTES = {
+    "claude": "slash commands (`/tdd`) and the Skill tool, from .claude/skills",
+    "codex": "type `$skill-name`; skills are found in .agents/skills (symlinks followed)",
+    "opencode": "reads .agents/skills natively",
+    "zcode": "reads .agents/skills natively",
+    "copilot": "no skill loader — open .agents/skills/<name>/SKILL.md and follow it",
+    "other": "no skill loader — open .agents/skills/<name>/SKILL.md and follow it",
+}
 
 
 def die(msg: str, code: int = 2) -> None:
@@ -319,6 +344,143 @@ def cmd_check(a) -> int:
     return 0
 
 
+def load_record(root: Path) -> dict:
+    path = root / ".agents" / "skill-sets.json"
+    if not path.is_file():
+        die(f"{path} not found — run install.sh with --sets first")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def resolve_steps(record: dict, named: str | None, steps_file: str | None) -> tuple[dict, str]:
+    """step → {set, skills} from the install record plus the onboard choice."""
+    by_name = {s["name"]: s for s in record.get("sets", [])}
+    if named is not None:
+        if named == "custom":
+            die("--named custom is not a set; pass --steps FILE for the per-step choices")
+        if named not in by_name:
+            die(f"--named {named}: not in the install record ({', '.join(sorted(by_name))})")
+        mode = "named"
+        chosen = {step: named for step in LIFECYCLE_STEPS}
+    else:
+        if not steps_file:
+            die("pass --named SET or --steps FILE")
+        picks = json.loads(Path(steps_file).read_text(encoding="utf-8"))
+        bad = [k for k in picks if k not in LIFECYCLE_STEPS]
+        if bad:
+            die(f"--steps file has unknown step(s): {', '.join(sorted(bad))}")
+        mode = "custom"
+        chosen = {step: picks.get(step, "") for step in LIFECYCLE_STEPS}
+        unknown = {v for v in chosen.values() if v and v not in by_name}
+        if unknown:
+            die(f"--steps names set(s) not in the install record: {', '.join(sorted(unknown))}")
+    steps_out = {}
+    for step in LIFECYCLE_STEPS:
+        setname = chosen[step]
+        if setname:
+            skills = by_name[setname].get("steps", {}).get(step, [])
+            steps_out[step] = {"set": setname, "skills": skills}
+        else:
+            steps_out[step] = {"set": None, "skills": []}
+    return steps_out, mode
+
+
+def render_skill_map(steps: dict, mode: str, named: str | None, record: dict,
+                     agents: list[str], other_note: str) -> list[str]:
+    by_name = {s["name"]: s for s in record.get("sets", [])}
+    lines = ["<!-- super-board:skill-map begin (managed) -->",
+             "## Skill sets & lifecycle map",
+             "",
+             "Which vendored skill set serves each lifecycle step, and how each agent reaches a skill.",
+             ""]
+    if mode == "named":
+        meta = by_name[named]
+        lines.append(f"Skill set: **{named}** — {meta.get('title', named)} "
+                     f"(source: {meta.get('source', '?')}, pinned: {meta.get('pinned_ref', '?')}).")
+    else:
+        picked = sorted({s for s in (v["set"] for v in steps.values()) if s})
+        lines.append("Skill sets per step (custom): " + ", ".join(picked) + ".")
+    lines += ["", "Machine-readable map: `.claude/super-board/skill-map.json` · "
+                  "install record: `.agents/skill-sets.json`.", ""]
+    lines += ["| Step | Set | Skills |", "|---|---|---|"]
+    for step in LIFECYCLE_STEPS:
+        entry = steps[step]
+        if entry["set"]:
+            lines.append(f"| {STEP_TITLES[step]} | {entry['set']} | {', '.join(entry['skills']) or '—'} |")
+        else:
+            lines.append(f"| {STEP_TITLES[step]} | super-board loop | no skill set chosen — "
+                         "the board's own collect/calibration loop covers it |")
+    for setname in sorted({v['set'] for v in steps.values() if v['set']}):
+        meta = by_name[setname]
+        if meta.get("maintain_fallback"):
+            lines.append("")
+            lines.append(meta["maintain_fallback"])
+        if meta.get("anytime"):
+            lines.append("")
+            lines.append(f"{setname} anytime skills: {', '.join(meta['anytime'])}")
+    lines += ["", "Agents: " + "; ".join(AGENT_NOTES.get(a, a) for a in agents) + "."]
+    if other_note:
+        lines.append(f"Other agents: {other_note}")
+    lines.append("<!-- super-board:skill-map end -->")
+    return lines
+
+
+def cmd_skill_map(a) -> int:
+    root = Path(a.root)
+    record = load_record(root)
+    steps, mode = resolve_steps(record, a.named, a.steps)
+    named = a.named if mode == "named" else None
+    agents = [h for h in (a.agents.split(",") if a.agents else record.get("hosts", ["claude"])) if h]
+    if "claude" not in agents:
+        agents = ["claude"] + agents
+    other_note = a.other_note or ""
+
+    # 1. machine-readable map next to the onboard config
+    map_path = root / ".claude" / "super-board" / "skill-map.json"
+    payload = {"version": 1, "mode": mode, "named": named, "steps": steps,
+               "agents": agents, "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
+               "record": {k: v for k, v in record.items() if k != "sets"},
+               "sets": {name: {kk: meta[kk] for kk in ("source", "pinned_ref", "license", "steps", "anytime", "maintain_fallback") if kk in meta}
+                        for name, meta in ((s["name"], s) for s in record.get("sets", []))}}
+    map_existed = map_path.is_file()
+    if not map_existed or map_path.read_text(encoding="utf-8") != json.dumps(payload, indent=2) + "\n":
+        atomic_write(map_path, json.dumps(payload, indent=2) + "\n")
+
+    # 2. the AGENTS.md sub-block, managed independently of the super-board block
+    block = render_skill_map(steps, mode, named, record, agents, other_note)
+    path = root / a.file
+    if not path.exists():
+        if not a.create:
+            die(f"{path} does not exist (pass --create to start one)")
+        atomic_write(path, "# AGENTS.md\n\n" + "\n".join(block) + "\n")
+        print("created")
+        return 0
+    text = path.read_text(encoding="utf-8")
+    lines = text.splitlines()
+    pairs, start = [], None
+    for i, l in enumerate(lines):
+        if MAP_BEGIN_RE.match(l):
+            start = i
+        elif MAP_END_RE.match(l) and start is not None:
+            pairs.append((start, i))
+            start = None
+    if len(pairs) > 1:
+        die(f"{path} has {len(pairs)} skill-map blocks; leave exactly one and re-run")
+    if pairs:
+        b, e = pairs[0]
+        new = lines[:b] + block + lines[e + 1:]
+        verdict = "updated"
+    else:
+        new = lines + ([""] if lines and lines[-1].strip() else []) + block
+        verdict = "inserted"
+    new_text = "\n".join(new) + "\n"
+    if new_text == text:
+        print("unchanged")
+        return 0
+    atomic_write(path, new_text)
+    print(verdict)
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -335,8 +497,12 @@ def main() -> int:
     p.add_argument("--units", required=True); p.add_argument("--target", action="append", required=True)
     p = sub.add_parser("check"); p.add_argument("--file", required=True)
     p.add_argument("--max-lines", type=int, default=200)
+    p = sub.add_parser("skill-map")
+    p.add_argument("--root", default="."); p.add_argument("--file", default="AGENTS.md")
+    p.add_argument("--named"); p.add_argument("--steps")
+    p.add_argument("--agents"); p.add_argument("--other-note"); p.add_argument("--create", action="store_true")
     a = ap.parse_args()
-    return globals()[f"cmd_{a.cmd}"](a)
+    return globals()[f"cmd_{a.cmd.replace('-', '_')}"](a)
 
 
 if __name__ == "__main__":
