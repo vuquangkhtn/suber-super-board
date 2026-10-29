@@ -15,7 +15,8 @@
 
 A fork-superset of [EricTechPro/super-board](https://github.com/EricTechPro/super-board) —
 the autonomous GitHub-Project loop where you add task cards to `Ready` and the board drains
-itself into merged PRs with evidence — extended here with:
+itself into merged PRs with evidence: 8 skills (5 you type, 3 the board runs), six guard
+hooks, one merge gate — extended here with:
 
 1. **Three vendored skill sets** you can onboard with: [mattpocock/skills](https://github.com/mattpocock/skills),
    [pstack](https://github.com/michael-denyer/pstack-claude) (Lauren Tan's stack, Claude port),
@@ -96,7 +97,30 @@ first set in your `--sets` list wins; the record in `.agents/skill-sets.json` no
 Unchanged from upstream: `/super-board run <slug>` plans waves, runs the Build → QA → Review
 lanes (worktrees, draft PRs, evidence, merge gate with `verify_commands`), six guard hooks,
 `/super-collect` for Sentry/PostHog/issues/PRs, `/ui-refine-loop`, `/visual`, `/git-sync`.
-See upstream's docs in `docs/` and `skills/*/README.md`.
+See upstream's docs in `docs/` and `skills/*/README.md`. Its own 8 skills (5 you type, 3 the board runs):
+
+<!-- skills:start -->
+**You type — 5 skills**
+
+| Skill | What it does |
+|---|---|
+| [`/super-board`](skills/super-board/README.md) | Orchestrator: plans waves, runs Build → QA → Review, merges when green. |
+| [`/super-collect`](skills/super-collect/README.md) | Finds problems (Sentry, PostHog, issues, PRs, architecture) and files verified Backlog cards. |
+| [`/ui-refine-loop`](skills/ui-refine-loop/README.md) | Critique → refine loop that polishes one page or component. |
+| [`/visual`](skills/visual/README.md) | One HTML page: branch recap, plan, or codebase map with diagrams. |
+| [`/git-sync`](skills/git-sync/README.md) | Commit per logical change, merge-pull, push without force, report. |
+
+**The board runs — 3 lanes**
+
+| Skill | What it does |
+|---|---|
+| [`/super-build`](skills/super-build/README.md) | Builder lane: worktree, smallest safe change, tests, draft PR. |
+| [`/super-qa`](skills/super-qa/README.md) | Tester lane: evidence, test-gap check, screenshots, or bounce to Build. |
+| [`/super-review`](skills/super-review/README.md) | Reviewer lane: own hypotheses, remembers prior findings, merge gate. |
+<!-- skills:end -->
+
+Each name links to that skill's README. Adding a skill? Write its `SKILL.md` and `README.md`,
+add a line to `skills/families.json`, and this table updates itself.
 
 ## Credits
 

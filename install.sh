@@ -251,6 +251,8 @@ def normalize_shared_refs(dest: Path):
 record = {"version": 1, "hosts": hosts, "installed_at": time.strftime("%Y-%m-%dT%H:%M:%S"), "sets": []}
 prev_sets = {s["name"]: s for s in prev.get("sets", [])}
 current_names = set()
+quiet = os.environ.get("SUPER_BOARD_QUIET_NEXT") == "1"
+summaries = []
 for setname in [s for s in sets_arg.split(",") if s]:
     meta = registry["sets"].get(setname)
     if meta is None:
@@ -301,7 +303,9 @@ for setname in [s for s in sets_arg.split(",") if s]:
             shutil.copy2(f, licdir / f.name)
     note = f", claude: {linked} links" if "claude" in hosts else ""
     extra = f", skipped: {', '.join(skipped)}" if skipped else ""
-    print(f"   ✓ skill set {setname}: {len(installed)} skills → .agents/skills{note}{extra}")
+    summaries.append(f"{setname} ({len(installed)}{extra})")
+    if not quiet:
+        print(f"   ✓ skill set {setname}: {len(installed)} skills → .agents/skills{note}{extra}")
     record["sets"].append({
         "name": setname, "title": meta.get("title", setname), "source": meta.get("source", ""),
         "pinned_ref": meta.get("pinned_ref", ""), "license": meta.get("license", ""),
@@ -321,7 +325,12 @@ for name, entry in prev_sets.items():
 tmp = record_path.with_suffix(".json.tmp")
 tmp.write_text(json.dumps(record, indent=2) + "\n")
 os.replace(tmp, record_path)
-print("   📦 record → .agents/skill-sets.json")
+if quiet:
+    # get.sh prints its own header and summary around the 🔧 installing group:
+    # one line per group, so the sets share a single line there.
+    print(f"   ✓ skill sets → .agents/skills: {', '.join(summaries)}")
+else:
+    print("   📦 record → .agents/skill-sets.json")
 PY
   fi
 fi
