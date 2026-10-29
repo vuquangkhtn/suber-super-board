@@ -1,19 +1,21 @@
 #!/usr/bin/env bash
-# super-board one-line installer.
+# super-board one-line installer (suber-super-board fork).
 #
-#   curl -fsSL https://raw.githubusercontent.com/EricTechPro/super-board/main/get.sh | bash
-#   curl -fsSL https://raw.githubusercontent.com/EricTechPro/super-board/main/get.sh | bash -s -- --protect-main
+#   curl -fsSL https://raw.githubusercontent.com/vuquangkhtn/suber-super-board/main/get.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/vuquangkhtn/suber-super-board/main/get.sh | bash -s -- --protect-main
 #
 # Options (everything else that starts with "-" goes straight to install.sh):
 #   --target <dir>        project to install into (default: the current folder)
 #   --ref <tag|branch>    which version to fetch (default: the latest release)
-#   --no-helper-skills    skip `npx skills@latest add mattpocock/skills`
+#   --no-helper-skills    install no vendored skill sets (default: mattpocock)
 #   -h, --help            show this help
-# Passed through to install.sh: --no-hooks, --protect-main.
+# Passed through to install.sh: --no-hooks, --protect-main, --sets=a,b,
+# --hosts=a,b (skill sets and agent CLIs; onboard can also be run with
+# --sets/--agents instead of answering its questions).
 #
 # Environment:
 #   SUPER_BOARD_REF       same as --ref
-#   SUPER_BOARD_REPO      GitHub owner/repo to fetch from (default EricTechPro/super-board)
+#   SUPER_BOARD_REPO      GitHub owner/repo to fetch from (default vuquangkhtn/suber-super-board)
 #   SUPER_BOARD_TARBALL   exact tarball URL to fetch instead (file:// works; used by tests)
 #
 # Written for bash 3.2 (stock macOS). The whole script lives in main(), called on
@@ -26,24 +28,11 @@ warn() { printf '⚠️  %s\n' "$*" >&2; }
 die()  { printf '❌ %s\n' "$*" >&2; exit "${2:-1}"; }
 have() { command -v "$1" >/dev/null 2>&1; }
 
-usage() { sed -n '2,19p' "${BASH_SOURCE[0]:-$0}" 2>/dev/null | sed 's/^# \{0,1\}//' || true; }
-
-# Matt Pocock's skills count as present when the project's skills-lock.json
-# lists them, or two of their skills already sit in a skills folder Claude reads.
-helper_skills_present() {
-  local t="$1" d
-  if [ -f "$t/skills-lock.json" ] && grep -q 'mattpocock/skills' "$t/skills-lock.json" 2>/dev/null; then
-    return 0
-  fi
-  for d in "$t/.claude/skills" "${HOME:-/nonexistent}/.claude/skills"; do
-    if [ -f "$d/grilling/SKILL.md" ] && [ -f "$d/tdd/SKILL.md" ]; then return 0; fi
-  done
-  return 1
-}
+usage() { sed -n '2,21p' "${BASH_SOURCE[0]:-$0}" 2>/dev/null | sed 's/^# \{0,1\}//' || true; }
 
 main() {
-  local target="" ref="${SUPER_BOARD_REF:-}" helpers=1
-  local repo="${SUPER_BOARD_REPO:-EricTechPro/super-board}"
+  local target="" ref="${SUPER_BOARD_REF:-}"
+  local repo="${SUPER_BOARD_REPO:-vuquangkhtn/suber-super-board}"
   local pass=()
 
   while [ $# -gt 0 ]; do
@@ -52,7 +41,6 @@ main() {
       --target=*) target="${1#--target=}"; shift ;;
       --ref) [ $# -ge 2 ] || die "--ref needs a tag or branch name" 64; ref="$2"; shift 2 ;;
       --ref=*) ref="${1#--ref=}"; shift ;;
-      --no-helper-skills) helpers=0; shift ;;
       -h|--help) usage; exit 0 ;;
       -*) pass+=("$1"); shift ;;
       *) [ -z "$target" ] || die "two target folders given: '$target' and '$1'" 64; target="$1"; shift ;;
@@ -93,7 +81,6 @@ main() {
   else
     say "   ✓ $ok"
   fi
-  case " $later " in *" node "*) helpers=0 ;; esac
 
   # --- download ---------------------------------------------------------
   local tmp
@@ -147,27 +134,15 @@ except Exception: print("")' 2>/dev/null || true)"
   # Quiet mode: install.sh prints only its "🔧 installing" group; the summary is ours.
   SUPER_BOARD_QUIET_NEXT=1 bash "$src/install.sh" ${pass[@]+"${pass[@]}"} "$target" || die "install.sh stopped with an error (see above). Nothing else was changed after that point." 1
 
-  # --- helper skills ----------------------------------------------------
-  local helper_note
-  if [ "$helpers" -eq 0 ]; then
-    case " $later " in
-      *" node "*) helper_note="skipped — 🔍 Checks will fix this" ;;
-      *) helper_note="skipped (--no-helper-skills)" ;;
-    esac
-  elif helper_skills_present "$target"; then
-    helper_note="already installed"
-  else
-    # stdin is this script when piped into bash, so give npx nothing to read. npx's
-    # own chatter goes to a log so the summary stays grouped.
-    if (cd "$target" && npx -y skills@latest add mattpocock/skills --skill '*' -a claude-code -y </dev/null >"$tmp/npx.log" 2>&1); then
-      helper_note="installed"
-    else
-      helper_note="failed — 🔍 Checks retries it (or: npx skills@latest add mattpocock/skills)"
-    fi
-  fi
+  # --- skill sets -------------------------------------------------------
+  # install.sh installed the chosen vendored skill sets (mattpocock by default)
+  # into .agents/skills and printed one ✓ line per set above — no npx, no
+  # network. Its record lands in .agents/skill-sets.json.
+  local sets_note="installed → .agents/skills (record: .agents/skill-sets.json)"
+  case " ${pass[*]-} " in *" --no-helper-skills "*) sets_note="skipped (--no-helper-skills)" ;; esac
 
   # --- summary ----------------------------------------------------------
-  say "🧠 helper skills: $helper_note"
+  say "🧠 skill sets: $sets_note"
   say "🎉 super-board $version is installed"
   say "👉 next: open Claude Code here and run /super-board onboard"
 }
