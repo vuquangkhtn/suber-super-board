@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "lifecycle_steps": ["plan", "design", "build", "test", "deploy", "maintain"],
+  "sets": {
+    "mattpocock": {
+      "title": "Matt Pocock skills",
+      "description": "27 workflow skills: grilling interviews, specs, tickets, TDD, PRs, retros.",
+      "source": "https://github.com/mattpocock/skills",
+      "pinned_ref": "vendored 2026-10-29 (repo commit 282a125)",
+      "license": "MIT",
+      "dir": "skill-sets/mattpocock",
+      "layout": "flat",
+      "steps": {
+        "plan": ["research", "grilling", "grill-me", "grill-with-docs", "to-questionnaire", "to-tickets", "wayfinder"],
+        "design": ["codebase-design", "domain-modeling", "to-spec"],
+        "build": ["implement", "implement-spec", "tdd", "prototype", "wizard"],
+        "test": ["diagnosing-bugs", "triage", "wait-what", "code-review"],
+        "deploy": ["pr", "handoff"],
+        "maintain": ["retro", "teach", "improve-codebase-architecture", "writing-for-agents"]
+      },
+      "anytime": ["ask-matt", "setup-matt-pocock-skills"]
+    },
+    "pstack": {
+      "title": "pstack (Claude port)",
+      "description": "66 skills from Lauren Tan's pstack, ported for agent CLIs by Michael Denyer. 'If you want to go fast, go deep first.'",
+      "source": "https://github.com/michael-denyer/pstack-claude",
+      "original": "https://github.com/cursor/plugins/tree/main/pstack (by Lauren Tan / poteto)",
+      "pinned_ref": "190fc9a009491cbcfc04e25ef5b3c2d1fcf5ca8a",
+      "vendored_path": "plugins/pstack/skills",
+      "license": "MIT (+ LICENSE-cursor-team-kit, LICENSE-thermos; see NOTICE.md, NOTICE-skills.md)",
+      "dir": "skill-sets/pstack",
+      "layout": "flat",
+      "steps": {
+        "plan": ["how", "why", "teach", "figure-it-out", "show-me-your-work"],
+        "design": ["architect", "arena", "interrogate"],
+        "build": ["tdd", "typescript-best-practices", "deslop", "no-comments"],
+        "test": ["create-verification-skill", "swarm", "blast-radius", "benchmark-checklist", "interrogate", "thermo-nuclear-code-quality-review"],
+        "deploy": ["make-pr-easy-to-review", "babysit", "fix-merge-conflicts", "get-pr-comments", "fix-ci"],
+        "maintain": []
+      },
+      "maintain_fallback": "pstack has no Maintain skills; super-board's own loop (super-collect, calibration) covers it.",
+      "anytime": [
+        "poteto-mode", "setup-pstack", "poteto-help",
+        "recall", "ketchup", "ketchup-video", "bro", "what-did-i-get-done", "in-your-own-words",
+        "technical-writing", "unslop", "sharpen", "statechart", "thermos", "thermo-nuclear-review",
+        "reflect", "correct", "automate-me", "maintain-verification-skill",
+        "create-formal-verification-skill", "maintain-formal-verification-skill",
+        "principle-attack-the-premise", "principle-boundary-discipline", "principle-build-the-lever",
+        "principle-encode-lessons-in-structure", "principle-exhaust-the-design-space",
+        "principle-experience-first", "principle-explain-the-number", "principle-fix-root-causes",
+        "principle-foundational-thinking", "principle-guard-the-context-window",
+        "principle-laziness-protocol", "principle-make-operations-idempotent",
+        "principle-migrate-callers-then-delete-legacy-apis", "principle-minimize-reader-load",
+        "principle-model-the-domain", "principle-never-block-on-the-human",
+        "principle-outcome-oriented-execution", "principle-prove-it-works",
+        "principle-redesign-from-first-principles", "principle-separate-before-serializing-shared-state",
+        "principle-sequence-verifiable-units", "principle-subtract-before-you-add",
+        "principle-test-behavior-not-implementation", "principle-type-system-discipline"
+      ]
+    },
+    "agent-skills": {
+      "title": "Addy Osmani's agent-skills",
+      "description": "25 production-grade skills (specs, TDD, review, security, shipping) + shared reference checklists.",
+      "source": "https://github.com/addyosmani/agent-skills",
+      "pinned_ref": "eb07f19f52c2669f2364897aaa293e2aaddd7b1c",
+      "license": "MIT",
+      "dir": "skill-sets/agent-skills",
+      "layout": "nested",
+      "nested_skills_dir": "skills",
+      "shared_references_dir": "references",
+      "install_note": "Flattens skills into .agents/skills/<name> and copies shared references/ to .agents/skills/references/; rewrites the two deep ../../../references/ links to ../../references/.",
+      "steps": {
+        "plan": ["interview-me", "idea-refine", "spec-driven-development", "constraint-driven-development", "planning-and-task-breakdown"],
+        "design": ["api-and-interface-design", "frontend-ui-engineering"],
+        "build": ["incremental-implementation", "test-driven-development", "context-engineering", "source-driven-development", "doubt-driven-development"],
+        "test": ["browser-testing-with-devtools", "debugging-and-error-recovery", "code-review-and-quality", "security-and-hardening", "performance-optimization", "code-simplification"],
+        "deploy": ["git-workflow-and-versioning", "ci-cd-and-automation", "shipping-and-launch"],
+        "maintain": ["deprecation-and-migration", "documentation-and-adrs", "observability-and-instrumentation"]
+      },
+      "anytime": ["using-agent-skills"]
+    }
+  }
+}
