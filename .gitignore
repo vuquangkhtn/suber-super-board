@@ -1,0 +1,5 @@
+# ZCode session-local state (keep team config out of this until it exists)
+.zcode/
+
+# macOS
+.DS_Store
