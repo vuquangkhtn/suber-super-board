@@ -32,5 +32,9 @@ git merge upstream/main          # conflicts stay inside the files we forked
 - `skills/super-board/references/config-schema.json` — `skill_sets`, `agents`,
   `other_agents` keys.
 - New: `skill-sets/` (the three vendored sets + `registry.json` step mappings).
+  The physical skill files live in `.agents/skills/` (ZCode's picker scans
+  symlinks-disabled); `skill-sets/<set>/<skill>` are relative symlinks back, and
+  the board's 8 skills get content-copies there, re-synced by
+  `scripts/agents-skills-sync.sh` and guarded by `tests/test-agents-skills-sync.sh`.
 
 Upstream files not listed here are unmodified.

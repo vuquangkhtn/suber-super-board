@@ -74,9 +74,15 @@ def test_subject_regex():
 def test_emoji_map_matches_standard():
     rows = dict((t, e) for e, t in re.findall(r"^\| (\S+) \| `([a-z]+)` \|", STANDARD, flags=re.M))
     assert rows == EMOJI, f"writing-standard.md emoji table drifted: {rows}"
+    # The writing table lives in the rules file. Onboarded repos (this pack repo
+    # included) make CLAUDE.md the "@AGENTS.md" pointer and move the rules —
+    # including this table — into AGENTS.md, so read whichever holds them.
     claude_md = (ROOT / "CLAUDE.md").read_text(encoding="utf-8")
+    rules = claude_md
+    if claude_md.splitlines() and claude_md.splitlines()[0].strip() == "@AGENTS.md":
+        rules = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
     for t, e in EMOJI.items():
-        assert f"{e} {t}" in claude_md, f"CLAUDE.md writing table lacks '{e} {t}'"
+        assert f"{e} {t}" in rules, f"writing table lacks '{e} {t}' in CLAUDE.md/AGENTS.md"
 
 
 def test_standard_examples_are_valid_subjects():

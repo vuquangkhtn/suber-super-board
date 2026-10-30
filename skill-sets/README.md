@@ -11,10 +11,18 @@ can install into any project, on top of super-board's own [`skills/`](../skills/
 
 ## Layout
 
-- `mattpocock/`, `pstack/` — **flat**: each subdirectory is one skill.
-- `agent-skills/` — **nested**: skills under `skills/`, plus the set's shared
-  `references/` checklists that the skills point into. Keeping the internal
-  layout means every relative link inside the set stays valid here.
+- `.agents/skills/` is the **physical home** of every discoverable skill (ZCode's
+  slash-menu picker scans with symlink-following disabled, so skill entries there
+  must be real directories):
+  - the three vendored sets' skills (mattpocock, pstack, agent-skills),
+  - `agent-skills`' shared `references/` checklists,
+  - content-copies of the board's 8 skills (source of truth stays `skills/`, which
+    upstream tests and readme-sync depend on — re-sync via
+    `scripts/agents-skills-sync.sh`, guarded by `tests/test-agents-skills-sync.sh`).
+- `skill-sets/<set>/<skill>` holds **relative symlinks** back into `.agents/skills/`
+  (agent-skills one level deeper: `../../../`). `install.sh` copies through them, so
+  targets still get real files. Set-level LICENSE / NOTICE / README files stay
+  physical here.
 
 The step → skills mapping for every set lives in [`registry.json`](registry.json)
 (one entry per lifecycle step: Plan · Design · Build · Test · Deploy · Maintain,
