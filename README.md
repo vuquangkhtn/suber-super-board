@@ -15,7 +15,7 @@
 
 A fork-superset of [EricTechPro/super-board](https://github.com/EricTechPro/super-board) —
 the autonomous GitHub-Project loop where you add task cards to `Ready` and the board drains
-itself into merged PRs with evidence: 8 skills (5 you type, 3 the board runs), six guard
+itself into merged PRs with evidence: 9 skills (6 you type, 3 the board runs), six guard
 hooks, one merge gate — extended here with:
 
 1. **Three vendored skill sets** you can onboard with: [mattpocock/skills](https://github.com/mattpocock/skills),
@@ -96,11 +96,12 @@ first set in your `--sets` list wins; the record in `.agents/skill-sets.json` no
 
 Unchanged from upstream: `/super-board run <slug>` plans waves, runs the Build → QA → Review
 lanes (worktrees, draft PRs, evidence, merge gate with `verify_commands`), six guard hooks,
-`/super-collect` for Sentry/PostHog/issues/PRs, `/ui-refine-loop`, `/visual`, `/git-sync`.
-See upstream's docs in `docs/` and `skills/*/README.md`. Its own 8 skills (5 you type, 3 the board runs):
+`/super-collect` for Sentry/PostHog/issues/PRs, `/ui-refine-loop`, `/visual`, `/git-sync`,
+`/skill-set-add` to vendor a new skill set (pack repo only).
+See upstream's docs in `docs/` and `skills/*/README.md`. Its own 9 skills (6 you type, 3 the board runs):
 
 <!-- skills:start -->
-**You type — 5 skills**
+**You type — 6 skills**
 
 | Skill | What it does |
 |---|---|
@@ -109,6 +110,7 @@ See upstream's docs in `docs/` and `skills/*/README.md`. Its own 8 skills (5 you
 | [`/ui-refine-loop`](skills/ui-refine-loop/README.md) | Critique → refine loop that polishes one page or component. |
 | [`/visual`](skills/visual/README.md) | One HTML page: branch recap, plan, or codebase map with diagrams. |
 | [`/git-sync`](skills/git-sync/README.md) | Commit per logical change, merge-pull, push without force, report. |
+| [`/skill-set-add`](skills/skill-set-add/README.md) | Vendors a GitHub skill repo into skill-sets/ + registry.json, licenses carried, validated. |
 
 **The board runs — 3 lanes**
 
