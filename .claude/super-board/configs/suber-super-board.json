@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "description": "suber-super-board dev loop",
+  "project": {
+    "owner": "vuquangkhtn",
+    "title": "Suber-super-board board",
+    "number": 2
+  },
+  "worker_backend": "workflow",
+  "model_tier": "medium",
+  "target": {
+    "type": "repo",
+    "url": null
+  },
+  "repo": {
+    "path": ".",
+    "remote": "https://github.com/vuquangkhtn/suber-super-board"
+  },
+  "base_branch": "main",
+  "timezone": "Asia/Ho_Chi_Minh",
+  "columns": [
+    "Backlog",
+    "Ready",
+    "Building",
+    "QA",
+    "Review",
+    "Blocked",
+    "Done"
+  ],
+  "labels": [
+    "qa",
+    "bug",
+    "feature"
+  ],
+  "paths": {
+    "project_md": "docs/super-board/PROJECT.md",
+    "pre_flight_md": "docs/super-board/pre-flight.md",
+    "runs_dir": "docs/super-board/runs"
+  },
+  "human_approves_merge": false,
+  "merge_policy": {
+    "default": "human",
+    "auto_max_lines": 400,
+    "always_human": {
+      "money": {
+        "labels": [
+          "money",
+          "payments",
+          "billing",
+          "pricing"
+        ],
+        "paths": [
+          "**/billing/**",
+          "**/payments/**",
+          "**/stripe/**",
+          "**/checkout/**"
+        ]
+      },
+      "auth": {
+        "labels": [
+          "auth",
+          "security"
+        ],
+        "paths": [
+          "**/auth/**",
+          "**/authz/**",
+          "**/permissions/**"
+        ]
+      },
+      "schema": {
+        "labels": [
+          "schema",
+          "destructive"
+        ],
+        "paths": []
+      }
+    }
+  },
+  "migrations": {
+    "globs": [
+      "supabase/migrations/**",
+      "prisma/migrations/**",
+      "drizzle/**",
+      "**/migrations/*.sql",
+      "db/migrate/**",
+      "alembic/versions/**"
+    ],
+    "allowed_envs": [
+      "test",
+      "staging"
+    ],
+    "target_env": "live",
+    "commands": {},
+    "checks": {},
+    "human_steps": []
+  },
+  "no_progress_cycles": 6,
+  "max_dispatches": 0,
+  "truth_gate": "non-trivial",
+  "collect": {
+    "sources": [
+      "github",
+      "prs"
+    ],
+    "window_days": 14
+  },
+  "notifications": {
+    "channel": "session",
+    "bot_identity": "vuquangkhtn"
+  },
+  "skill_sets": {
+    "mode": "named",
+    "named": "pstack",
+    "steps": null
+  },
+  "agents": [
+    "claude",
+    "zcode"
+  ],
+  "other_agents": "",
+  "verify_commands": [
+    "bash tests/run-safety.sh"
+  ]
+}
