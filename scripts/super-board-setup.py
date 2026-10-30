@@ -947,6 +947,9 @@ def flag(argv, name, default=None):
         i = argv.index(name)
         if i + 1 < len(argv):
             return argv[i + 1]
+    for a in argv:  # prefix form: --sets=a,b
+        if a.startswith(name + "="):
+            return a[len(name) + 1:]
     return default
 
 
