@@ -41,6 +41,38 @@ for helper in super-board-approval.py super-board-github-read.py; do
   echo "$OUT" | q '.missing == []' || fail "repair must leave no missing scripts: $OUT"
 done
 
+# 1c — this fork: check reports what install.sh put into .agents/skills — the
+#     installed skill sets and the wired hosts — from the install record.
+#     (Scenario 1's fix ran install.sh with its default set, so bare carries one.)
+OUT=$(python3 "$SETUP" check --root "$T" || true)
+echo "$OUT" | q '.skill_sets.names == ["mattpocock"] and .skill_sets.hosts == ["claude"]' \
+  || fail "check should read .agents/skill-sets.json: $OUT"
+TXT=$(python3 "$SETUP" check --root "$T" --text || true)
+echo "$TXT" | grep -q "✓ skill sets installed: mattpocock" \
+  || fail "text report should list the installed skill sets: $TXT"
+
+# 1d — fix --sets/--hosts pass through to install.sh, even when the board pack is
+#     already present (onboard's 🧩 Skills step re-runs it for exactly that reason).
+#     flag() parses the separate-argument form; the `--sets=x` prefix form that
+#     onboard.md shows is NOT parsed at this base (fixed on main locally) — do not
+#     assert it here until setup.py accepts both.
+T="$WORK/sets"; mkdir -p "$T"
+OUT=$(python3 "$SETUP" fix --root "$T" --no-helpers --sets mattpocock,pstack --hosts claude,zcode || true)
+echo "$OUT" | q '.fixed | any(test("^skill sets installed: mattpocock \\([0-9]+\\), pstack \\([0-9]+\\)$"))' \
+  || fail "fix should report the installed sets: $OUT"
+python3 - "$T/.agents/skill-sets.json" <<'PY' || fail "passthrough record wrong" >&2
+import json, sys
+r = json.load(open(sys.argv[1]))
+assert [s["name"] for s in r["sets"]] == ["mattpocock", "pstack"], [s["name"] for s in r["sets"]]
+assert r["hosts"] == ["claude", "zcode"], r["hosts"]
+PY
+[ -f "$T/.agents/skills/how/SKILL.md" ] || fail "--sets=pstack did not reach install.sh"
+OUT=$(python3 "$SETUP" fix --root "$T" --no-helpers --sets agent-skills || true)
+echo "$OUT" | q '.fixed | any(test("^skill sets installed: agent-skills \\([0-9]+\\)$"))' \
+  || fail "fix must reinstall sets even with the pack present: $OUT"
+python3 -c "import json,sys; r=json.load(open('$T/.agents/skill-sets.json')); ns=[s['name'] for s in r['sets']]; assert 'agent-skills' in ns, ns" \
+  || fail "agent-skills missing from the record after the forced reinstall"
+
 # 2 — upgrade: an older super-board (VERSION 1.8.2, removed skill folders, a qa-only
 #     config with Skipped, old collect keys, telegram) is detected and upgraded with
 #     no question, backed up first, and listed as "Upgraded for you".
