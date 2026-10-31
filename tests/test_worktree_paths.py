@@ -142,30 +142,42 @@ reclaim_stranded_building
 
     def test_generated_lane_paths_pass_guard_and_are_cleaned(self):
         # Execute the workflow with a stub agent and inspect its real lane prompts.
-        js = r"""
-const fs = require('fs')
-const src = fs.readFileSync(process.argv[1], 'utf8').replace(/^export const meta/m, 'const meta')
-const AsyncFunction = (async () => {}).constructor, prompts = {}
-const agent = async (prompt, opts) => {
-  if (opts.label.startsWith('preflight')) return { verdicts: [{ number: 7, verdict: 'proceed' }] }
-  if (opts.label.startsWith('classify')) return { kind: 'feature', complexity: 'low' }
-  prompts[opts.label] = prompt
+        # The wave script is TypeScript (ZCode facade: agent(name).ask), so it is
+        # spliced into a generated .mts module — facade stubbed at module scope,
+        # body inside async main() — and run with node --experimental-strip-types.
+        preamble = """
+const prompts: Record<string, string> = {}
+function replyFor(name: string): unknown {
+  if (name.startsWith('preflight-')) return { verdicts: [{ number: 7, verdict: 'proceed' }] }
+  if (name.startsWith('classifier-')) return { kind: 'feature', complexity: 'low' }
   return { status: 'advanced', column: 'next' }
 }
-const pipeline = async (items, ...stages) => Promise.all(items.map(async item => {
-  let value = item
-  for (const stage of stages) value = await stage(value, item)
-  return value
-}))
-new AsyncFunction('args','agent','pipeline','log',src)(
-  {configPath:'fixture.json',cards:[{number:7,status:'Ready',title:'fixture'}]},
-  agent,pipeline,()=>{}).then(()=>console.log(JSON.stringify(prompts)))
+const agent = (name: string, _persona?: unknown) => ({
+  ask: async <T>(prompt: string): Promise<T> => {
+    if (name.startsWith('preflight-') || name.startsWith('classifier-')) return replyFor(name) as T
+    prompts[name] = prompt
+    return replyFor(name) as T
+  },
+})
+const args = { configPath: 'fixture.json', cards: [{ number: 7, status: 'Ready', title: 'fixture' }] }
+const log = (_m: string): void => {}
+const phase = (_n: string): void => {}
+const report = (_i: unknown, _t?: string): void => {}
+const artifact = { board: (_i: string, _s: unknown): void => {} }
+async function main() {
 """
-        prompts = json.loads(self.run_cmd("node", "-e", js,
-                                          str(PACK / "workflows/super-board-wave.js")).stdout)
-        for lane in ("build", "qa", "review"):
+        runner = Path(self.tmp.name) / "wave-runner.mts"
+        runner.write_text(
+            preamble
+            + (PACK / "workflows/super-board-wave.js").read_text()
+            + "}\nawait main();\nconsole.log(JSON.stringify({ prompts }));\n",
+            encoding="utf-8",
+        )
+        result = self.run_cmd("node", "--experimental-strip-types", str(runner))
+        prompts = json.loads(result.stdout)["prompts"]
+        for lane, name in (("build", "builder-7"), ("qa", "tester-7"), ("review", "reviewer-7")):
             with self.subTest(lane=lane):
-                match = re.search(r"create your own worktree under ([^, ]+)", prompts[lane + ":#7"])
+                match = re.search(r"create your own worktree under ([^, ]+)", prompts[name])
                 self.assertIsNotNone(match, "lane must prescribe its worktree location")
                 path = match[1].rstrip("/") + "/issue-7-" + lane
                 command = "git worktree add -b issue-7-" + lane + " " + shlex.quote(path) + " main"
