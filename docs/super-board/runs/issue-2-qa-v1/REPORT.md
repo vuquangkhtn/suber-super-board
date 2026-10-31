@@ -1,8 +1,9 @@
 # QA report — issue #2 · v1 · branch tip `9784523` (feature `b3d6e17`)
 
 Tester pass for PR #8 (`issue-2-switch-skill-set-after-onboard`), label `feature`.
-Target: repo CLI feature — non-visual, so no screenshots are captured (stated omission;
-evidence is the command logs in this folder).
+Target: repo CLI feature — non-visual, so no screenshots are captured (stated omission).
+Raw run logs are gitignored (`docs/super-board/runs/**/*.log`, .gitignore:35); this report
+quotes the decisive output lines verbatim.
 
 All commands below were run in this QA pass, in `.claude/worktrees/issue-2-qa`.
 
