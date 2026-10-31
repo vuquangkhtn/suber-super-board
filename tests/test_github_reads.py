@@ -30,7 +30,11 @@ print(r.get('err', ''), file=sys.stderr)
 sys.exit(r.get('rc', 0))
 ''')
         gh.chmod(0o755)
-        self.env = dict(os.environ, PATH=f'{self.root}:{os.environ["PATH"]}',
+        # The suite asserts strict AND non-strict semantics itself, so a caller's
+        # exported SB_* vars (the merge gate exports both) must not leak in.
+        parent = {k: v for k, v in os.environ.items()
+                  if k not in ('SB_GITHUB_READ_STRICT', 'SB_REPO_PATH')}
+        self.env = dict(parent, PATH=f'{self.root}:{os.environ["PATH"]}',
                         READ_CALLS=str(self.log), SB_GITHUB_HALT_FILE=str(self.halt),
                         SB_GITHUB_RETRY_DELAY='0')
 
