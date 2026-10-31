@@ -35,10 +35,12 @@ SHA=$(git -C "$SRC" rev-parse HEAD)
 
 # The flow the skill prescribes: clone the repo to a temp dir, vendor from the
 # clone, inside a throwaway copy of the pack (copied, not cloned, so the files
-# this test brings are there before the first commit).
+# this test brings are there before the first commit). .agents must come along:
+# the shipped sets' skill-sets/<set>/ entries are symlinks into it, and a copy
+# without it leaves every vendored skill dangling for tests/test-registry.sh.
 git clone -q "$SRC" "$W/clone"
 mkdir "$W/pack"
-cp -R "$PACK/skills" "$PACK/scripts" "$PACK/tests" "$PACK/skill-sets" "$W/pack/"
+cp -R "$PACK/skills" "$PACK/scripts" "$PACK/tests" "$PACK/skill-sets" "$PACK/.agents" "$W/pack/"
 cd "$W/pack" || fail "pack copy failed"
 
 TOOL="python3 $PWD/scripts/super-board-skill-set-add.py"
