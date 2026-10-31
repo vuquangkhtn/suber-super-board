@@ -10,6 +10,15 @@ so step 1 (Checks) can say "Fixed for you" without asking anything.
                                                                        --sets/--hosts pass through to install.sh
                                                                        (this fork's vendored skill sets)
     super-board-setup.py migrate-config <config.json> [--dry-run]     old config keys → v3 keys
+    super-board-setup.py sets <set|custom> [--steps FILE] [--root DIR] [--pack DIR]
+                                 [--config PATH] [--hosts=a,b] [--dry-run]
+                                                                       switch the chosen skill set(s)
+                                                                       after onboard: drops the skills only
+                                                                       the old set(s) own, installs the new
+                                                                       choice via install.sh, rewrites
+                                                                       skill_sets in the config and the
+                                                                       skill map (JSON + AGENTS.md block),
+                                                                       and reports added/removed/skipped
     super-board-setup.py names   [--root DIR]                          two board-name suggestions
     super-board-setup.py branch  [--root DIR]                          branches, deploy source, recommendation
     super-board-setup.py board-rank    --owner O                       the user's boards, best column match first
@@ -43,7 +52,8 @@ Before the first option rewrite it also saves the original card statuses to
 No card is deleted. Detected concurrent edits are preserved or halt recovery.
 
 Exit: 0 ok · 1 check found red items · 2 a gh call failed · 64 usage · 66 pack not found.
-Stdlib only.
+`sets` exits 64 for an unknown set or a bad --steps file, 2 when the install record
+or the installer itself fails. Stdlib only.
 """
 from __future__ import annotations
 
@@ -460,6 +470,186 @@ def text_report(res):
         lines.append(f"  Needs your machine: {n['name']} isn't installed. It's needed for {n['why']}.")
         lines.append(f"    {n['command']}")
     return "\n".join(lines)
+
+
+# ── switching skill sets after onboard ─────────────────────────────────────────
+
+def find_config(root, explicit=None):
+    """The active onboard config, resolved like super-board-status.py does:
+    explicit path → the `.claude/super-board/active` slug → a sole configs/*.json.
+    An explicit value is a path relative to root, or a bare config slug under
+    configs/. None when it stays ambiguous (several configs, no active marker)."""
+    cfgdir = os.path.join(root, ".claude", "super-board", "configs")
+    if explicit:
+        for p in (os.path.join(root, explicit),
+                  os.path.join(cfgdir, os.path.basename(explicit)
+                               + ("" if explicit.endswith(".json") else ".json"))):
+            if os.path.isfile(p):
+                return p
+        return None
+    slug = read(os.path.join(root, ".claude", "super-board", "active")).strip()
+    if slug:
+        p = os.path.join(cfgdir, os.path.basename(slug))
+        if not p.endswith(".json"):
+            p += ".json"
+        if os.path.isfile(p):
+            return p
+    cfgs = sorted(glob.glob(os.path.join(cfgdir, "*.json")))
+    return cfgs[0] if len(cfgs) == 1 else None
+
+
+def registry_skills(reg, setname):
+    """Every skill a set can install: its per-step picks plus the anytime list."""
+    meta = (reg.get("sets") or {}).get(setname) or {}
+    names = {s for picks in (meta.get("steps") or {}).values() for s in (picks or [])}
+    names.update(meta.get("anytime") or [])
+    return names
+
+
+def set_layout(reg, setname):
+    return ((reg.get("sets") or {}).get(setname) or {}).get("layout") or "flat"
+
+
+def switch_sets(root, pack, name=None, steps_file=None, hosts_arg=None, config_path=None, dry=False):
+    """Switch the chosen skill set(s) after onboard. Order matters: remove the
+    dropped sets' skills first, prune the record, THEN install — install.sh skips
+    any skill it finds on disk that its set doesn't already own, so installing
+    first would leave shared skills (tdd, teach) owned by nobody. Only skills the
+    install record owns are touched; anything else in .agents/skills stays."""
+    rec_path = os.path.join(root, ".agents", "skill-sets.json")
+    rec = load_json(rec_path)
+    if not isinstance(rec, dict) or not isinstance(rec.get("sets"), list) or not rec["sets"]:
+        return {"error": ".agents/skill-sets.json lists no installed sets — "
+                         "install one first (onboard's 🧩 Skills step)"}, 2
+    reg = load_json(os.path.join(pack, "skill-sets", "registry.json"))
+    if not isinstance(reg, dict) or not isinstance(reg.get("sets"), dict) or not reg["sets"]:
+        return {"error": f"skill-sets/registry.json missing or unreadable in the pack ({pack})"}, 2
+    known = sorted(reg["sets"])
+    steps_picks = None
+    if steps_file:
+        picks = load_json(steps_file if os.path.isabs(steps_file) else os.path.join(root, steps_file))
+        if not isinstance(picks, dict):
+            return {"error": f"--steps file is not a JSON object: {steps_file}"}, 64
+        allowed = reg.get("lifecycle_steps") or []
+        bad = [k for k in picks if allowed and k not in allowed]
+        if bad:
+            return {"error": f"--steps file has unknown step(s): {', '.join(sorted(bad))}"}, 64
+        chosen = sorted({v for v in picks.values() if v})
+        unknown = [v for v in chosen if v not in reg["sets"]]
+        if unknown:
+            return {"error": f"--steps names unknown set(s): {', '.join(sorted(unknown))} (use {', '.join(known)})"}, 64
+        mode, named = "custom", None
+        steps_picks = {s: picks.get(s, "") for s in allowed}
+        steps_for_map = steps_file if os.path.isabs(steps_file) else os.path.join(root, steps_file)
+        sets_arg = ",".join(chosen)
+    else:
+        if not name:
+            return {"error": "usage: sets <named-set | custom> [--steps FILE]"}, 64
+        if name == "custom":
+            return {"error": "sets custom needs --steps FILE with the per-step choices"}, 64
+        if name not in reg["sets"]:
+            return {"error": f"unknown skill set: {name} (use {', '.join(known)})"}, 64
+        mode, named = "named", name
+        steps_for_map = None
+        sets_arg = name
+    chosen_names = [s for s in sets_arg.split(",") if s]
+    hosts = (hosts_arg or ",".join(rec.get("hosts") or [])).strip() or None
+
+    old_sets = {s["name"]: s for s in rec["sets"]}
+    old_installed = {sk for s in rec["sets"] for sk in s.get("installed", [])}
+    kept = [n for n in old_sets if n in chosen_names]
+    dropped = sorted(n for n in old_sets if n not in chosen_names)
+    kept_skills = {sk for n in kept for sk in old_sets[n].get("installed", [])}
+    removed_now = sorted({sk for n in dropped for sk in old_sets[n].get("installed", [])} - kept_skills)
+    notes = []
+    nested_shared = ".agents/skills/references"
+
+    res = {"root": root, "mode": mode, "sets": chosen_names, "dropped": dropped,
+           "hosts": hosts or "", "notes": notes, "dry_run": dry}
+
+    if not dry:
+        # 1. skills only the dropped sets own — the record is the ownership proof
+        for sk in removed_now:
+            p = os.path.join(root, ".agents", "skills", sk)
+            link = os.path.join(root, ".claude", "skills", sk)
+            if os.path.islink(link):
+                tgt = os.path.normpath(os.path.join(os.path.dirname(link), os.readlink(link)))
+                if tgt == p:  # exactly the link install.sh made; never a real skill
+                    os.remove(link)
+            if os.path.islink(p):
+                os.remove(p)
+            elif os.path.isdir(p):
+                shutil.rmtree(p, ignore_errors=True)
+        # a dropped nested set's shared references/ dir is not a skill; drop it too
+        if any(set_layout(reg, n) == "nested" for n in dropped) \
+                and not any(set_layout(reg, n) == "nested" for n in kept + chosen_names):
+            refs = os.path.join(root, nested_shared)
+            if os.path.islink(refs):
+                os.remove(refs)
+            elif os.path.isdir(refs):
+                shutil.rmtree(refs, ignore_errors=True)
+            notes.append(f"removed shared {nested_shared}/")
+        # 2. prune the dropped sets so install.sh cannot preserve their records
+        rec["sets"] = [s for s in rec["sets"] if s["name"] in chosen_names]
+        write_json(rec_path, rec)
+        # 3. the new choice, installed by the existing idempotent installer
+        cmd = ["bash", os.path.join(pack, "install.sh"), f"--sets={sets_arg}"]
+        if hosts:
+            cmd.append(f"--hosts={hosts}")
+        cmd.append(root)
+        r = run(cmd, input="", cwd=root)
+        if r.returncode != 0:
+            res["removed"] = removed_now
+            res["error"] = "install.sh failed: " + (r.stderr or r.stdout).strip()[-300:]
+            return res, 2
+        new_rec = load_json(rec_path) or {}
+    else:
+        planned = kept_skills | set().union(*(registry_skills(reg, n) for n in chosen_names))
+        new_registry_skills = set().union(*(registry_skills(reg, n) for n in chosen_names))
+        res["added"] = sorted(planned - old_installed)
+        res["removed"] = sorted(set(removed_now) - new_registry_skills)
+        res["skipped"] = sorted(new_registry_skills & kept_skills)
+        cfgp = find_config(root, config_path)
+        res["config"] = os.path.relpath(cfgp, root) if cfgp else None
+        return res, 0
+
+    # 4. the honest diff, from the records on both sides of the switch
+    new_sets = {s["name"]: s for s in new_rec.get("sets", [])}
+    new_installed = {sk for s in new_rec.get("sets", []) for sk in s.get("installed", [])}
+    res["added"] = sorted(new_installed - old_installed)
+    res["removed"] = sorted(old_installed - new_installed)
+    res["skipped"] = sorted({sk for n in chosen_names for sk in (new_sets.get(n) or {}).get("skipped", [])})
+
+    # 5. the config carries the choice (active config resolved like status does)
+    cfgp = find_config(root, config_path)
+    cfg = load_json(cfgp) if cfgp and os.path.isfile(cfgp) else None
+    if isinstance(cfg, dict):
+        cfg["skill_sets"] = ({"mode": "custom", "steps": steps_picks} if mode == "custom"
+                             else {"mode": "named", "named": named})
+        write_json(cfgp, cfg)
+        res["config"] = os.path.relpath(cfgp, root)
+    else:
+        res["config"] = None
+        notes.append("no onboard config updated (pass --config, or onboard creates one)")
+
+    # 6. regenerate the skill map (JSON + AGENTS.md block) for the new choice
+    map_cmd = ["python3", os.path.join(pack, "scripts", "super-board-agents-md.py"),
+               "skill-map", "--root", root, "--file", "AGENTS.md"]
+    map_cmd += ["--steps", steps_for_map] if mode == "custom" else ["--named", named]
+    if hosts:
+        map_cmd += ["--agents", hosts]
+    other = (cfg or {}).get("other_agents")
+    if other:
+        map_cmd += ["--other-note", other]
+    if not os.path.isfile(os.path.join(root, "AGENTS.md")):
+        map_cmd.append("--create")
+    r = run(map_cmd, cwd=root)
+    if r.returncode != 0:
+        res["error"] = "skill-map failed: " + (r.stderr or r.stdout).strip()[-300:]
+        return res, 2
+    res["skill_map"] = (r.stdout or "").strip() or "unchanged"
+    res["skill_map_json"] = os.path.isfile(os.path.join(root, ".claude", "super-board", "skill-map.json"))
+    return res, 0
 
 
 # ── board names and branches ──────────────────────────────────────────────────
@@ -979,6 +1169,23 @@ def main(argv):
             if not dry and changes:
                 write_json(path, new)
             return out({"config": path, "changes": changes, "written": bool(changes and not dry)})
+        if cmd == "sets":
+            # `sets <name>` switches the skill set after onboard; `sets custom
+            # --steps FILE` is the per-step variant. Needs the pack: it runs
+            # install.sh and the skill-map writer from there.
+            pack = find_pack(flag(rest, "--pack"))
+            if not pack:
+                print(json.dumps({"error": "pack-not-found"}, indent=1))
+                return 66
+            name = rest[0] if rest and not rest[0].startswith("-") else None
+            steps = flag(rest, "--steps")
+            if not name and not steps:
+                return out({"error": "usage: sets <named-set | custom> [--steps FILE] "
+                                     "[--config PATH] [--hosts=a,b] [--dry-run]"}, 64)
+            res, code = switch_sets(root, pack, name=name, steps_file=steps,
+                                    hosts_arg=flag(rest, "--hosts"),
+                                    config_path=flag(rest, "--config"), dry=dry)
+            return out(res, code)
         if cmd == "names":
             return out(names(root))
         if cmd == "branch":

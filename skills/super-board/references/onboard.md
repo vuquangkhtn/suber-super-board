@@ -36,6 +36,7 @@ checkout, then re-run onboard.`
 |---|---|
 | `python3 $SB/super-board-setup.py check / fix --text` | 1 Checks |
 | `python3 $SB/super-board-setup.py fix --sets=… --hosts=…` | 2 Skills, 3 Agents (install the chosen set(s), wire hosts) |
+| `python3 $SB/super-board-setup.py sets <set\|custom> [--steps FILE]` | switching later: drops the old set's skills, installs the new choice, rewrites config `skill_sets` + the skill map, reports added/removed/skipped |
 | `python3 $SB/super-board-setup.py board-rank / board-migrate / names` | 1 (upgrade), 5 Board |
 | `python3 $SB/super-board-setup.py branch` | 6 Branch |
 | `python3 $SB/super-board-agents-md.py …` | 7 AGENTS.md |
@@ -225,6 +226,8 @@ step-7 keys were `agents_md` since this fork (upstream called it `agents`). Writ
    │    One ✓ line per set from its output. Failure → halt with its error line (answers kept).
    └─ Save: answers.skill_sets = {"mode": "named", "named": "<set>"} or {"mode": "custom",
       "steps": {…}}; answers.last_step = "skills".
+     Switching later (changed your mind about the set): don't hand-edit — one command does
+     the whole move: `python3 $SB/super-board-setup.py sets <set|custom> [--steps FILE]`.
 
 3. 🤖 AGENTS — which agent CLIs the skills must reach (this fork)
    ├─ Silent: `command -v` for claude codex opencode copilot zcode; `.agents/skill-sets.json`
