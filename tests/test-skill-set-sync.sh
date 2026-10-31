@@ -236,11 +236,15 @@ bash tests/test-registry.sh >/dev/null || fail "layout-b registry invalid before
 LINK_BEFORE=$(readlink skill-sets/tiny/skills/alpha)
 SYNC_B="python3 $PWD/scripts/super-board-skill-set-sync.py tiny"
 
-# 6 — dry-run on the symlink layout writes nothing.
+# 6 — dry-run on the symlink layout writes nothing: the pack must be
+#     byte-identical before and after (QA addition — the checksum below was
+#     computed but never compared before).
+find . -type f | sort | xargs shasum 2>/dev/null | shasum > "$W/b-before"
 OUT=$($SYNC_B --ref "$SHA2" --dry-run) || fail "layout-b dry-run failed"
 echo "$OUT" | grep -q "→ $SHA2" || fail "layout-b dry-run misses the pin move"
 echo "$OUT" | grep -q "removed — KEPT" || fail "layout-b dry-run misses the removal"
 find . -type f | sort | xargs shasum 2>/dev/null | shasum > "$W/b-after"
+cmp -s "$W/b-before" "$W/b-after" || fail "layout-b dry-run wrote to the pack"
 ok
 
 # 7 — real sync: physical store updated, symlinks untouched, gamma added to

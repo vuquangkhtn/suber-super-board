@@ -1,0 +1,22 @@
+# Red-first proof for the new QA assertions (mutations never committed)
+# Each mutation was applied to scripts/super-board-skill-set-sync.py in the QA
+# worktree only, tests run, script restored from backup (git status clean after).
+
+## M1b — dry-run writes a marker file and still exits 0
+mutation: `print("  dry-run: nothing written")` →
+  `open("qa-dry-run-marker", "w").write("x")` + print
+result:
+  FAIL: dry-run wrote to the pack — before/after trees differ      (qa check 1)
+  FAIL: layout-b dry-run wrote to the pack                         (main check 6, fixed)
+→ both byte-compares catch a writing dry-run.
+
+## M2 — mapping_of() never returns a step (removal flags lose their step)
+mutation: `return step` → `return "anytime"` in mapping_of()
+result:
+  FAIL: steps-mapped removal not flagged against its step in the dry-run  (qa check 1)
+→ the steps-branch flag assertion fires.
+
+## restored
+PASS: skill-set-sync-qa (5 checks)
+PASS: skill-set-sync (8 checks)
+script modifications left: 0

@@ -1,0 +1,4 @@
+## 4. standalone suite in the synced clone
+PASS: 56 safety suites
+post-sync run-safety exit=0
+PASS: test-registry.sh
