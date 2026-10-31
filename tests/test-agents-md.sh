@@ -79,4 +79,78 @@ am block --root "$T" --file ok.md --create >/dev/null; am check --file "$T/ok.md
 N=$(wc -l < ../skills/super-board/references/agents-md-block.md)
 [ "$N" -le 40 ] || fail "the managed block is $N lines; keep it ≤ 40 so AGENTS.md stays under 200"
 
-echo "PASS: test-agents-md.sh (10 scenarios)"
+# 11 — skill-map: from the install record, --named writes .claude/super-board/skill-map.json
+#     and its own managed block in AGENTS.md; claude is always in the agents line
+#     even when the record's hosts omit it.
+SM="$T/skill-map-root"; mkdir -p "$SM/.agents"
+cat > "$SM/.agents/skill-sets.json" <<'JSON'
+{"version": 1, "hosts": ["zcode"], "sets": [
+  {"name": "pstack", "title": "pstack (Claude port)", "source": "https://example/pstack",
+   "pinned_ref": "190fc9a", "license": "MIT", "installed": ["how", "architect", "recall"],
+   "skipped": [], "steps": {"plan": ["how"], "design": ["architect"]},
+   "anytime": ["recall"], "maintain_fallback": "pstack has no Maintain skills."}]}
+JSON
+OUT=$(am skill-map --root "$SM" --named pstack --create) || fail "skill-map --create failed: $OUT"
+[ "$OUT" = "created" ] || fail "skill-map should report created, got: $OUT"
+M="$SM/.claude/super-board/skill-map.json"
+[ -f "$M" ] || fail "skill-map.json was not written"
+jq -e '.version == 1 and .mode == "named" and .named == "pstack"' "$M" >/dev/null || fail "skill-map.json header wrong: $(cat "$M")"
+jq -e '.agents == ["claude", "zcode"]' "$M" >/dev/null || fail "claude must be forced into agents: $(cat "$M")"
+jq -e '.steps.plan == {"set": "pstack", "skills": ["how"]}' "$M" >/dev/null || fail "plan step wrong: $(cat "$M")"
+jq -e '.sets.pstack.pinned_ref == "190fc9a"' "$M" >/dev/null || fail "provenance must reach the map: $(cat "$M")"
+grep -q '^<!-- super-board:skill-map begin (managed) -->$' "$SM/AGENTS.md" || fail "begin marker missing"
+grep -q '^<!-- super-board:skill-map end -->$' "$SM/AGENTS.md" || fail "end marker missing"
+grep -q 'Skill set: \*\*pstack\*\*' "$SM/AGENTS.md" || fail "named set line missing"
+grep -q 'Machine-readable map: `.claude/super-board/skill-map.json`' "$SM/AGENTS.md" || fail "map pointer line missing"
+grep -q '^| Plan | pstack | how |$' "$SM/AGENTS.md" || fail "step table row wrong"
+grep -q 'pstack anytime skills: recall' "$SM/AGENTS.md" || fail "anytime line missing"
+
+# 12 — a second identical run is a no-op for AGENTS.md ("unchanged") and keeps
+#     exactly one marker pair.
+OUT=$(am skill-map --root "$SM" --named pstack) || fail "second skill-map run failed: $OUT"
+[ "$OUT" = "unchanged" ] || fail "re-running the same map must be a no-op, got: $OUT"
+[ "$(grep -c 'super-board:skill-map begin' "$SM/AGENTS.md")" -eq 1 ] || fail "duplicate marker pairs"
+
+# 13 — a user line above the block survives an update; switching --named rewrites
+#     the block and the machine map, nothing else.
+python3 - "$SM/AGENTS.md" <<'PY'
+import sys
+p = sys.argv[1]
+t = open(p).read()
+open(p, "w").write("- user rule\n\n" + t)
+PY
+python3 - "$SM/.agents/skill-sets.json" <<'PY'
+import json, sys
+p = sys.argv[1]
+r = json.load(open(p))
+r["sets"].append({"name": "mattpocock", "title": "Matt Pocock's skills", "source": "https://example/mp",
+                  "pinned_ref": "282a125", "license": "MIT", "installed": ["tdd"], "skipped": [],
+                  "steps": {"build": ["tdd"]}, "anytime": [], "maintain_fallback": ""})
+json.dump(r, open(p, "w"))
+PY
+OUT=$(am skill-map --root "$SM" --named mattpocock) || fail "map update failed: $OUT"
+[ "$OUT" = "updated" ] || fail "switching sets should update, got: $OUT"
+head -1 "$SM/AGENTS.md" | grep -q '^- user rule$' || fail "text above the block changed"
+jq -e '.named == "mattpocock"' "$M" >/dev/null || fail "map not switched: $(cat "$M")"
+grep -q '^| Build | mattpocock | tdd |$' "$SM/AGENTS.md" || fail "build row missing after switch"
+[ "$(grep -c 'super-board:skill-map begin' "$SM/AGENTS.md")" -eq 1 ] || fail "update duplicated the block"
+
+# 14 — custom mode: a per-step file with "" steps falls back to the super-board
+#     loop row, and an unknown set in the file is refused.
+printf '{"plan": "pstack", "design": "", "build": "", "test": "pstack", "deploy": "", "maintain": ""}' > "$SM/steps.json"
+am skill-map --root "$SM" --steps "$SM/steps.json" >/dev/null || fail "custom steps rejected"
+jq -e '.mode == "custom" and .steps.design.set == null and .steps.test.set == "pstack"' "$M" >/dev/null \
+  || fail "custom map wrong: $(cat "$M")"
+grep -q 'Skill sets per step (custom): pstack.' "$SM/AGENTS.md" || fail "custom header line missing"
+grep -q 'no skill set chosen' "$SM/AGENTS.md" || fail "the super-board loop fallback row is missing"
+printf '{"plan": "nope"}' > "$SM/bad.json"
+RC=0; am skill-map --root "$SM" --steps "$SM/bad.json" >/dev/null 2>&1 || RC=$?
+[ "$RC" -eq 2 ] || fail "unknown set in a steps file should be refused (2), got $RC"
+
+# 15 — no install record: refused with the fix named, not guessed.
+SM2="$T/no-record"; mkdir -p "$SM2"
+RC=0; OUT=$(am skill-map --root "$SM2" --named pstack 2>&1 >/dev/null) || RC=$?
+[ "$RC" -eq 2 ] || fail "missing record should be refused (2), got $RC"
+echo "$OUT" | grep -q "run install.sh with --sets first" || fail "the error should name the fix: $OUT"
+
+echo "PASS: test-agents-md.sh (15 scenarios)"

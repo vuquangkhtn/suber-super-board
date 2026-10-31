@@ -292,6 +292,58 @@ for s in super-board-env-check.sh super-board-merge-policy.py super-board-agents
 done
 rm -rf "$T"
 
+# 13 — this fork's install paths, called directly: --sets installs the vendored
+#     sets into .agents/skills, records them in order, links them for claude,
+#     and copies each set's license next to the record. (test-get.sh covers the
+#     same path through get.sh; this is install.sh's own contract.)
+T=$(mktemp -d)
+OUT=$("$INSTALL" --no-hooks --sets=mattpocock,pstack --hosts=claude,zcode "$T" 2>&1) \
+  || fail "--sets install failed: $OUT"
+[ -f "$T/.agents/skills/tdd/SKILL.md" ] || fail "--sets: mattpocock tdd missing from .agents/skills"
+[ -f "$T/.agents/skills/how/SKILL.md" ] || fail "--sets: pstack how missing from .agents/skills"
+[ -L "$T/.claude/skills/tdd" ] || fail "--sets: claude link for tdd missing"
+[ "$(readlink "$T/.claude/skills/tdd")" = "../../.agents/skills/tdd" ] \
+  || fail "--sets: claude link must be relative into .agents/skills, got: $(readlink "$T/.claude/skills/tdd")"
+[ -f "$T/.agents/skill-set-licenses/pstack/LICENSE-cursor-team-kit" ] \
+  || fail "--sets: license files that ship with a set must be copied (pstack)"
+python3 - "$T/.agents/skill-sets.json" <<'PY' || fail "--sets record wrong" >&2
+import json, sys
+r = json.load(open(sys.argv[1]))
+ns = [s["name"] for s in r["sets"]]
+assert ns == ["mattpocock", "pstack"], ns
+assert r["hosts"] == ["claude", "zcode"], r["hosts"]
+mat, pstack = r["sets"]
+assert "tdd" in mat["installed"] and "tdd" not in pstack["installed"], (mat["installed"], pstack["installed"])
+assert "tdd" in pstack["skipped"], pstack["skipped"]
+assert mat["steps"]["build"], "record steps must be filtered to what landed"
+assert mat["pinned_ref"] and mat["license"], mat
+PY
+echo "$OUT" | grep -q "skill set mattpocock" && echo "$OUT" | grep -q "skill set pstack" \
+  || fail "--sets should announce each installed set: $OUT"
+rm -rf "$T"
+
+# 14 — claude is always wired: --hosts without claude still records it and links
+#     the set skills into .claude/skills (the board pack lives there).
+T=$(mktemp -d)
+"$INSTALL" --no-hooks --sets=mattpocock --hosts=codex "$T" >/dev/null 2>&1
+python3 - "$T/.agents/skill-sets.json" <<'PY' || fail "claude was not forced into the record" >&2
+import json, sys
+r = json.load(open(sys.argv[1]))
+assert r["hosts"] == ["claude", "codex"], r["hosts"]
+PY
+[ -L "$T/.claude/skills/tdd" ] || fail "claude link missing even though --hosts omitted it"
+rm -rf "$T"
+
+# 15 — unknown set and unknown host are refused with exit 64 and the valid names,
+#     not silently ignored.
+T=$(mktemp -d); mkdir -p "$T"
+OUT=$("$INSTALL" --no-hooks --sets=nope "$T" 2>&1) && fail "unknown set was accepted"
+echo "$OUT" | grep -q "unknown skill set" || fail "unknown set should be explained: $OUT"
+echo "$OUT" | grep -q "mattpocock" || fail "unknown set error should name the valid sets: $OUT"
+OUT=$("$INSTALL" --no-hooks --hosts=chatgpt --no-helper-skills "$T" 2>&1) && fail "unknown host was accepted"
+echo "$OUT" | grep -q "unknown host" || fail "unknown host should be explained: $OUT"
+rm -rf "$T"
+
 # 9 — the snippet the installer merges is the one hooks/README.md documents.
 python3 - ../hooks/README.md ../hooks/settings-snippet.json <<'PY' || fail "hooks/README.md snippet and hooks/settings-snippet.json differ"
 import json, re, sys
@@ -299,4 +351,4 @@ doc = re.search(r"```json\n(.*?)```", open(sys.argv[1]).read(), re.S).group(1)
 sys.exit(0 if json.loads(doc) == json.load(open(sys.argv[2])) else 1)
 PY
 
-echo "PASS: test-install.sh (17 scenarios)"
+echo "PASS: test-install.sh (20 scenarios)"
