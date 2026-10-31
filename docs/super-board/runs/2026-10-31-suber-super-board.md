@@ -90,3 +90,23 @@ No wave dispatched — pre-flight found:
 No claims made, no lock created, no comments posted. #3's pinned approval (head
 `246fbb5`) still stands. Cards #9/#10/#11 left in Ready.
 Resume: after main is synced and the gate-env fix lands → `/super-board run suber-super-board`.
+
+## Wave 6 (run dwfrun-27b57bd2 — first wave off synced main, suite 54/54)
+
+| # | Lanes run | Final status | Column | Detail |
+|---|---|---|---|---|
+| #3 | review:halted | halted | Review (unchanged) | Required reads halted before the lane started (halt written 21:47 +0700): no worktree, no card move, nothing posted; claim preserved then released post-recovery. Pinned approval (head `246fbb5`) untouched. |
+| #9 | preflight:blocked | blocked | Blocked | Sequence behind open PR #7 (`Closes #3`): PR's diff edits `skills/super-board/references/onboard.md` + `README.md` (+15/−11) — exactly #9's AC-4 edit targets. Block comment `6544892186`, `blocked-by: 3`. |
+| #10 | preflight:blocked | blocked | Blocked | Script said proceed; agent upgraded to sequence on evidence: AC 3 requires stating the `--set` vs `--sets` split "consistently with #9's outcome" and no single-value `--set` exists yet — building now means inventing a flag. Also README peer-overlap with #9. Block comment `6544895105`, `blocked-by: 9`. |
+| #11 | preflight:blocked | blocked | Blocked | Sequence behind #10 (README) and PR #7 (onboard.md): `blocked-by: 3, 10`. Script's `tests/run-safety.sh` overlap corrected on evidence (both bodies only RUN it). Block comment `6544897654`. No deadlock: acyclic #3 → #9 → #10 → #11. |
+
+**Halt + recovery**: pre-flight's issue-#10 comments read failed 3 attempts → exit 79, marker
+`github-halt.json`. Root cause is the recurring one (archived `…5153…`/`…0333…`/`…6586…`):
+the agent passed `-R` to `gh api`, which takes no `-R` — the endpoint path already carries the
+repo. Cleared with `--resume --kind comments -- api repos/…/issues/10/comments --paginate
+--slurp` (validator passed; archived `…793458…`). Claims released; no worktrees left.
+
+⚠️ Symptom, not patched (dispatcher mid-run rule): the wave script's REPO_PIN says
+"pass -R <repo> on issue/pr commands and spell repos/<repo>/… in api paths" — agents
+repeatedly apply the `-R` half to `api` calls too, halting the run. One-line fix in
+`workflows/super-board-wave.js` REPO_PIN: "NEVER pass -R to `gh api`". Needs owner approval.
