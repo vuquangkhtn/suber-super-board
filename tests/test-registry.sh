@@ -57,5 +57,29 @@ print("registry ok: every vendored skill mapped or anytime, every mapping vendor
 PY
 
 rc=$?
+
+# Store-symlink layout: the vendored skills are reached through symlinks (either
+# direction — .agents/skills as the physical store with skill-sets/ linking in,
+# or the reverse). A dangling link silently vanishes from the iterdir checks
+# above, so every link under skill-sets/ must resolve on its own pass. This is
+# deliberately direction-agnostic: it holds no matter which side owns the files.
+python3 - <<'PY' || rc=1
+import os
+from pathlib import Path
+
+broken = []
+for link in Path("skill-sets").rglob("*"):
+    if not link.is_symlink():
+        continue
+    target = os.readlink(link)
+    resolved = target if os.path.isabs(target) else link.parent / target
+    if not os.path.exists(resolved):
+        broken.append(f"{link} -> {target}")
+if broken:
+    print("dangling symlinks in skill-sets/:")
+    print("\n".join(sorted(broken)))
+    raise SystemExit(1)
+PY
+
 [ "$rc" -eq 0 ] && echo "PASS: test-registry.sh"
 exit "$rc"

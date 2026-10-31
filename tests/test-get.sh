@@ -118,4 +118,12 @@ printf '%s\n' "$out" | grep -q '✗ node' || fail "missing node should be marked
 printf '%s\n' "$out" | grep -q '^🧠 skill sets: installed' || fail "skill sets should install without node: $out"
 [ -f "$T/.agents/skills/tdd/SKILL.md" ] || fail "skill sets missing without node"
 
-echo "PASS: test-get.sh (9 cases)"
+# 10 — this fork's defaults: the one-liner installs from THIS fork's repo, and
+#     upstream's npx step stays gone (the vendored copies ship in the tarball —
+#     cases 1 and 9 prove the network-free install end to end).
+grep -q 'SUPER_BOARD_REPO:-vuquangkhtn/suber-super-board' "$GET" \
+  || fail "the default repo must be this fork, not upstream"
+grep -q 'npx skills add' "$GET" && fail "the npx helper step must stay deleted (no network, no Node)"
+grep -q 'SUPER_BOARD_TARBALL' "$GET" || fail "the tarball override (used by every case above) is missing"
+
+echo "PASS: test-get.sh (10 cases)"
