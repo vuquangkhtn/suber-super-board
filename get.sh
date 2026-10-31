@@ -10,8 +10,9 @@
 #   --no-helper-skills    install no vendored skill sets (default: mattpocock)
 #   -h, --help            show this help
 # Passed through to install.sh: --no-hooks, --protect-main, --sets=a,b,
-# --hosts=a,b (skill sets and agent CLIs; onboard can also be run with
-# --sets/--agents instead of answering its questions).
+# --hosts=a,b (skill sets and agent CLIs). Onboard's own flag is --set=<one set>
+# (deprecated alias: --sets) — install.sh's --sets is the comma list. Onboard can
+# also be run with --set/--agents instead of answering its questions.
 #
 # Environment:
 #   SUPER_BOARD_REF       same as --ref
@@ -28,7 +29,7 @@ warn() { printf '⚠️  %s\n' "$*" >&2; }
 die()  { printf '❌ %s\n' "$*" >&2; exit "${2:-1}"; }
 have() { command -v "$1" >/dev/null 2>&1; }
 
-usage() { sed -n '2,21p' "${BASH_SOURCE[0]:-$0}" 2>/dev/null | sed 's/^# \{0,1\}//' || true; }
+usage() { sed -n '2,22p' "${BASH_SOURCE[0]:-$0}" 2>/dev/null | sed 's/^# \{0,1\}//' || true; }
 
 main() {
   local target="" ref="${SUPER_BOARD_REF:-}"
