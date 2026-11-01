@@ -7,7 +7,7 @@
 # Options (everything else that starts with "-" goes straight to install.sh):
 #   --target <dir>        project to install into (default: the current folder)
 #   --ref <tag|branch>    which version to fetch (default: the latest release)
-#   --no-helper-skills    install no vendored skill sets (default: mattpocock)
+#   --no-helper-skills    install no vendored skill sets (default: all vendored sets)
 #   -h, --help            show this help
 # Passed through to install.sh: --no-hooks, --protect-main, --sets=a,b,
 # --hosts=a,b (skill sets and agent CLIs). Onboard's own flag is --set=<one set>
@@ -136,9 +136,9 @@ except Exception: print("")' 2>/dev/null || true)"
   SUPER_BOARD_QUIET_NEXT=1 bash "$src/install.sh" ${pass[@]+"${pass[@]}"} "$target" || die "install.sh stopped with an error (see above). Nothing else was changed after that point." 1
 
   # --- skill sets -------------------------------------------------------
-  # install.sh installed the chosen vendored skill sets (mattpocock by default)
-  # into .agents/skills and printed one ✓ line per set above — no npx, no
-  # network. Its record lands in .agents/skill-sets.json.
+  # install.sh installed the chosen vendored skill sets (all of them by default;
+  # --sets=<list> narrows) into .agents/skills and printed one ✓ line per set
+  # above — no npx, no network. Its record lands in .agents/skill-sets.json.
   local sets_note="installed → .agents/skills (record: .agents/skill-sets.json)"
   case " ${pass[*]-} " in *" --no-helper-skills "*) sets_note="skipped (--no-helper-skills)" ;; esac
 
