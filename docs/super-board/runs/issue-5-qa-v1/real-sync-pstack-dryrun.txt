@@ -1,0 +1,14 @@
+# Real pstack sync in a temp clone of PR #14 head b4a987b (issue #5 QA v1)
+# clone: git clone --branch issue-5-sync-vendored-skill-set <worktree> /tmp/qa-pack-5b → HEAD b4a987b731dfeca9d8f9d0a2fda6242f869b8003
+# upstream: https://github.com/michael-denyer/pstack-claude · pin 190fc9a009491cbcfc04e25ef5b3c2d1fcf5ca8a → HEAD 5851c89613e2ddc3a6b7f4af02a42363b30ef8d3
+# upstream pin..HEAD diff: 0 skills added, 0 removed, 9 updated (architect arena how interrogate poteto-mode reflect setup-pstack swarm why)
+
+## 1. dry-run --ref HEAD · byte-compare of the whole clone before/after
+skill-set-sync: pstack @ https://github.com/michael-denyer/pstack-claude
+  pin: 190fc9a009491cbcfc04e25ef5b3c2d1fcf5ca8a → 5851c89613e2ddc3a6b7f4af02a42363b30ef8d3 (registry.json + UPSTREAM.md)
+  added: none
+  updated: architect, arena, how, interrogate, poteto-mode, reflect, setup-pstack, swarm, why
+  removed: none
+  dry-run: nothing written
+dry-run exit=0
+WRITE-FREEDOM VERIFIED: git status identical before/after dry-run

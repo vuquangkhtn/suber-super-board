@@ -15,7 +15,7 @@
 
 A fork-superset of [EricTechPro/super-board](https://github.com/EricTechPro/super-board) —
 the autonomous GitHub-Project loop where you add task cards to `Ready` and the board drains
-itself into merged PRs with evidence: 9 skills (6 you type, 3 the board runs), six guard
+itself into merged PRs with evidence: 10 skills (7 you type, 3 the board runs), six guard
 hooks, one merge gate — extended here with:
 
 1. **Three vendored skill sets** you can onboard with: [mattpocock/skills](https://github.com/mattpocock/skills),
@@ -101,10 +101,10 @@ Unchanged from upstream: `/super-board run <slug>` plans waves, runs the Build �
 lanes (worktrees, draft PRs, evidence, merge gate with `verify_commands`), six guard hooks,
 `/super-collect` for Sentry/PostHog/issues/PRs, `/ui-refine-loop`, `/visual`, `/git-sync`,
 `/skill-set-add` to vendor a new skill set (pack repo only).
-See upstream's docs in `docs/` and `skills/*/README.md`. Its own 9 skills (6 you type, 3 the board runs):
+See upstream's docs in `docs/` and `skills/*/README.md`. Its own 10 skills (7 you type, 3 the board runs):
 
 <!-- skills:start -->
-**You type — 6 skills**
+**You type — 7 skills**
 
 | Skill | What it does |
 |---|---|
@@ -114,6 +114,7 @@ See upstream's docs in `docs/` and `skills/*/README.md`. Its own 9 skills (6 you
 | [`/visual`](skills/visual/README.md) | One HTML page: branch recap, plan, or codebase map with diagrams. |
 | [`/git-sync`](skills/git-sync/README.md) | Commit per logical change, merge-pull, push without force, report. |
 | [`/skill-set-add`](skills/skill-set-add/README.md) | Vendors a GitHub skill repo into skill-sets/ + registry.json, licenses carried, validated. |
+| [`/skill-set-sync`](skills/skill-set-sync/README.md) | Syncs a vendored skill set from upstream: store, registry pin, UPSTREAM.md, removals flagged, validated. |
 
 **The board runs — 3 lanes**
 
