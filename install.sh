@@ -10,7 +10,9 @@
 # and leaves settings.json untouched. --protect-main also wires the opt-in
 # guard that blocks direct and force pushes to main/master/base_branch; with
 # --no-hooks it installs that one guard alone. The installer asks nothing:
-# super-board onboard asks the questions (protect main is one of them).
+# super-board onboard asks the questions (protect main is one of them). Onboard's
+# own parameter is --set=<one set> (deprecated alias --sets) — distinct from this
+# script's comma-list --sets below.
 #
 # This fork (suber-super-board) also installs vendored skill sets from
 # skill-sets/ (see skill-sets/registry.json) into the target's agent-neutral
@@ -51,7 +53,7 @@ for arg in "$@"; do
     --sets=*) SETS="${arg#--sets=}" ;;
     --hosts=*) HOSTS="${arg#--hosts=}" ;;
     --no-helper-skills) SETS="" ;;
-    -h|--help) sed -n '2,26p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,28p' "$0"; exit 0 ;;
     -*) echo "unknown option: $arg" >&2; exit 64 ;;
     *) TARGET="$arg" ;;
   esac
