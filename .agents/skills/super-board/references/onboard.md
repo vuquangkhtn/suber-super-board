@@ -6,12 +6,16 @@ Config schema and field notes: `config-schema.json`. Loaded by `SKILL.md` for `s
 Invoked as `/super-board onboard` (get.sh / install.sh) or `/super-board:super-board onboard`
 (plugin install — skill names carry the plugin prefix).
 
-**Parameters** (this fork): `/super-board onboard --sets=<mattpocock|pstack|agent-skills|custom>
---agents=<claude,codex,opencode,copilot,zcode,other>` pre-answers steps 2–3. Validate both before
-step 1: an unknown value prints the valid ones and halts (answers file untouched). Given values are
-recorded in the answers file exactly as if asked, and their steps keep running their silent halves
-(detect, install, wiring) but skip their questions. `--sets=custom` still asks the six per-step
-questions — a parameter list cannot express them. With no parameters every step asks.
+**Parameters** (this fork): `/super-board onboard --set=<mattpocock|pstack|agent-skills|custom>
+--agents=<claude,codex,opencode,copilot,zcode,other>` pre-answers steps 2–3. `--sets=<one value>`
+still works as a deprecated alias of `--set`; a comma list at either spelling
+(`--set=a,b`, `--sets=a,b`) halts with `🛑 onboard takes one skill set — install.sh's --sets takes a
+comma list. Re-run with one set, e.g. --set=pstack.` — install.sh's `--sets` is the list, onboard's
+is one value. Validate both before step 1: an unknown value prints the valid ones and halts (answers
+file untouched). Given values are recorded in the answers file exactly as if asked, and their steps
+keep running their silent halves (detect, install, wiring) but skip their questions. `--set=custom`
+still asks the six per-step questions — a parameter list cannot express them. With no parameters
+every step asks.
 
 ## Design rules
 
@@ -204,8 +208,8 @@ step-7 keys were `agents_md` since this fork (upstream called it `agents`). Writ
 2. 🧩 SKILLS — which vendored skill set guides the six lifecycle steps (this fork)
    ├─ Silent: read `skill-sets/registry.json` (one option per entry in its `sets`; describe each
    │    by its `description` and the count of mapped + anytime skills) and `.agents/skill-sets.json`
-   │    (what install.sh put down: per-set skills per step, skipped names) and the `--sets`
-   │    parameter if given.
+   │    (what install.sh put down: per-set skills per step, skipped names) and the `--set`
+   │    parameter if given (either spelling).
    ├─ AskUserQuestion "Which skill set should guide Plan · Design · Build · Test · Deploy ·
    │    Maintain?" (header "Skill set"), recommended first — one option per registry set, then:
    │    • <set> — <registry description> · <N skills>
@@ -509,7 +513,8 @@ answers are kept and it resumes at <step>".
 | 1 | Node declined, or `npx skills add` fails | `⚠️ Matt Pocock's skills aren't installed — lanes use built-in checklists. Later: <command>.` Continues. |
 | 1 | Workflow still fails `node --check` after the re-copy | `🛑 .claude/workflows/super-board-wave.js is corrupt. Re-run ./install.sh <this-dir> — don't hand-edit it.` |
 | 1 | settings.json invalid JSON | `✋ .claude/settings.json is not valid JSON; I left it untouched. Fix it, then re-run — only the settings entries repeat.` |
-| 2 | Unknown `--sets` value | `🛑 Unknown skill set: <v> — use mattpocock, pstack, agent-skills or custom. Re-run with the fix.` |
+| 2 | Unknown `--set` value | `🛑 Unknown skill set: <v> — use mattpocock, pstack, agent-skills or custom. Re-run with the fix.` |
+| 2 | Comma list at `--set`/`--sets` | `🛑 onboard takes one skill set — install.sh's --sets takes a comma list. Re-run with one set, e.g. --set=pstack.` |
 | 2 | A set install fails | `🛑 <set> didn't install (<reason>). Fix it, then re-run onboard — it resumes at Skills.` |
 | 3 | Unknown `--agents` value | `🛑 Unknown host: <v> — use claude, codex, opencode, copilot, zcode, other. Re-run with the fix.` |
 | 3 | Host re-wire fails | `🛑 Couldn't wire <hosts> (<reason>). Fix it, then re-run onboard — it resumes at Agents.` |

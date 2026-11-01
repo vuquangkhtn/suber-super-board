@@ -110,3 +110,22 @@ repo. Cleared with `--resume --kind comments -- api repos/…/issues/10/comments
 "pass -R <repo> on issue/pr commands and spell repos/<repo>/… in api paths" — agents
 repeatedly apply the `-R` half to `api` calls too, halting the run. One-line fix in
 `workflows/super-board-wave.js` REPO_PIN: "NEVER pass -R to `gh api`". Needs owner approval.
+
+## Reconcile after the #3 merge (no wave)
+
+| # | Lanes run | Final status | Column | Detail |
+|---|---|---|---|---|
+| #3 | — | done (reconciled) | Done | PR #7 MERGED at 14:51:50Z by the human, mid-recovery. Head `246fbb5` (the reviewed sha) verified ancestor of origin/main via merge `9d48cda`. Card Review → Done, reconciliation comment `6544998450`, needs-you cleared on issue+PR. |
+| #9 | — | swept | Ready | blocked-by 3 cleared → Ready, sweep comment `6544999984`. |
+| #5 | — | swept | Ready | blocked-by 3 cleared → Ready, sweep comment `6545000493`. |
+| #10/#11/#4 | — | unchanged | Blocked | behind #9 (and #5 for #4) — freed by the next closes. |
+
+## Wave 7 (run dwfrun-6843e043 — build #9, #5)
+
+| # | Lanes run | Final status | Column | Detail |
+|---|---|---|---|---|
+| #9 | build:advanced → qa:advanced → review:human-gate | human-gate | Blocked | Review clean: 5/5 ACs verified file:line, run-safety 56/56, truth 90/100. Merge gate exit 7 (`merge_policy.default: "human"`) → 🙋 Blocked, needs-you on issue+PR, canonical approval request on #9. **PR #13.** |
+| #5 | build:advanced → qa:advanced → review:human-gate | human-gate | Blocked | First review of PR #14: 3/3 ACs, run-safety 57 suites green, truth 95/100, no blocking findings (R1–R3 non-blocking). Gate exit 7 + size 1908 > 400 → 🙋 Blocked, needs-you, approval request posted. **PR #14.** |
+
+**Run end**: board drained for robot work — #9/#5 wait on human merges (PRs #13/#14);
+#10 (behind 9), #11 (behind 10), #4 (behind 5) free automatically when those close.

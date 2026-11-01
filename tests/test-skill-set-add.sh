@@ -35,9 +35,9 @@ SHA=$(git -C "$SRC" rev-parse HEAD)
 
 # The flow the skill prescribes: clone the repo to a temp dir, vendor from the
 # clone, inside a throwaway copy of the pack (copied, not cloned, so the files
-# this test brings are there before the first commit). .agents must come along:
-# the shipped sets' skill-sets/<set>/ entries are symlinks into it, and a copy
-# without it leaves every vendored skill dangling for tests/test-registry.sh.
+# this test brings are there before the first commit). .agents/skills goes too:
+# skill-sets/<set>/<skill> are relative symlinks into it, and a dangling store
+# fails the registry validation before the fixture is even vendored.
 git clone -q "$SRC" "$W/clone"
 mkdir "$W/pack"
 cp -R "$PACK/skills" "$PACK/scripts" "$PACK/tests" "$PACK/skill-sets" "$PACK/.agents" "$W/pack/"

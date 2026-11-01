@@ -47,8 +47,11 @@ Then onboard:
 
 ```
 /super-board onboard                                   # interactive wizard
-/super-board onboard --sets=pstack --agents=claude,codex
+/super-board onboard --set=pstack --agents=claude,codex
 ```
+
+Onboard takes one set: `--set=pstack` (`--sets` is a deprecated alias) — install.sh's `--sets=a,b`
+is the comma list.
 
 ## The onboard wizard (10 steps)
 

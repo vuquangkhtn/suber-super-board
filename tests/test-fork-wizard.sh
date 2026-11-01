@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # The fork's onboard wizard contract, offline. Upstream's wizard was 8 steps;
 # this fork inserts 🧩 Skills (step 2) and 🤖 Agents (step 3) and grows the
-# command line by --sets/--agents. Four surfaces carry that contract and must
+# command line by --set/--agents (onboard's --sets survives as a deprecated
+# single-value alias). Four surfaces carry that contract and must
 # not drift apart: onboard.md (the wizard text), config-schema.json (the config
 # keys), skill-sets/registry.json (the set names) and install.sh (the hosts).
 # Each check below ties one surface to another, so a rename on one side fails
@@ -37,24 +38,30 @@ assert "10 steps" in text[fence:end], "the start screen must say 10 steps"
 PY
 [ $? -eq 0 ] || fail "wizard is not the fork's 10-step shape (2 🧩 Skills, 3 🤖 Agents)"
 
-# 2 — the --sets/--agents parameters are documented with the full choice lists.
-grep -q -- '--sets=<mattpocock|pstack|agent-skills|custom>' "$ONBOARD" \
-  || fail "onboard.md must document --sets with every set name (plus custom)"
+# 2 — the --set/--agents parameters are documented with the full choice lists.
+grep -q -- '--set=<mattpocock|pstack|agent-skills|custom>' "$ONBOARD" \
+  || fail "onboard.md must document --set with every set name (plus custom)"
 grep -q -- '--agents=<claude,codex,opencode,copilot,zcode,other>' "$ONBOARD" \
   || fail "onboard.md must document --agents with every host"
+# 2b — --sets exists at onboard only as the deprecated single-value alias, and a
+#      comma list is rejected by name (it is install.sh's list, not onboard's).
+grep -q 'deprecated alias' "$ONBOARD" \
+  || fail "onboard.md must document --sets as a deprecated alias of --set"
+grep -q "onboard takes one skill set" "$ONBOARD" \
+  || fail "onboard.md must reject comma lists naming install.sh's list semantics"
 
 # 3 — the sets onboard offers are exactly the vendored ones: onboard.md's
-#     --sets list ↔ registry.json's sets keys (+ the custom escape hatch).
+#     --set list ↔ registry.json's sets keys (+ the custom escape hatch).
 python3 - "$ONBOARD" "$REG" <<'PY' || exit 1
 import json, re, sys
 from pathlib import Path
 
 onboard = Path(sys.argv[1]).read_text()
 reg = json.loads(Path(sys.argv[2]).read_text())
-listed = set(re.search(r"--sets=<([^>]+)>", onboard).group(1).split("|"))
+listed = set(re.search(r"--set=<([^>]+)>", onboard).group(1).split("|"))
 assert listed == set(reg["sets"]) | {"custom"}, (listed, set(reg["sets"]))
 PY
-[ $? -eq 0 ] || fail "onboard's --sets choices and registry.json sets disagree"
+[ $? -eq 0 ] || fail "onboard's --set choices and registry.json sets disagree"
 
 # 4 — the hosts onboard offers are exactly the ones install.sh accepts.
 python3 - "$ONBOARD" "$INSTALL" <<'PY' || exit 1
