@@ -31,6 +31,8 @@ hooks, one merge gate — extended here with:
 
 Everything upstream is unchanged otherwise — provenance and pins: [UPSTREAM.md](UPSTREAM.md).
 
+**New here?** [docs/GUIDE.md](docs/GUIDE.md) is the end-to-end usage guideline: prerequisites → install → onboard → drain the board → human gates → recovery → troubleshooting.
+
 ## Install
 
 One command, in your project folder:
