@@ -28,8 +28,8 @@ export HOME="$WORK/home"; mkdir -p "$HOME"
 
 bash -n "$GET" || fail "get.sh has a syntax error"
 
-# 1 — default install into --target: pack lands, hooks wired, the default
-#     vendored skill set (mattpocock) lands in .agents/skills with its record.
+# 1 — default install into --target: pack lands, hooks wired, ALL vendored
+#     skill sets land in .agents/skills in registry order, mattpocock first.
 T="$WORK/t1"; mkdir -p "$T"
 out=$(bash "$GET" --target "$T" 2>&1) || fail "default install exited non-zero: $out"
 for s in super-board super-build super-qa super-review super-collect visual git-sync ui-refine-loop; do
@@ -38,12 +38,18 @@ done
 [ -x "$T/.claude/bin/super-board-run.sh" ] || fail "dispatcher script not installed"
 [ -f "$T/.claude/workflows/super-board-wave.js" ] || fail "workflow not installed"
 [ -f "$T/.claude/settings.json" ] || fail "hooks were not merged into settings.json"
-[ -f "$T/.agents/skills/tdd/SKILL.md" ] || fail "default skill set (mattpocock) not installed"
+[ -f "$T/.agents/skills/tdd/SKILL.md" ] || fail "default install: mattpocock tdd not installed"
 [ -f "$T/.agents/skills/grilling/SKILL.md" ] || fail "mattpocock grilling not installed"
-[ -L "$T/.claude/skills/tdd" ] || fail "mattpocock tdd should get a .claude/skills symlink"
+[ -f "$T/.agents/skills/how/SKILL.md" ] || fail "default install: pstack how not installed"
+[ -f "$T/.agents/skills/spec-driven-development/SKILL.md" ] || fail "default install: agent-skills spec-driven-development not installed"
+[ -L "$T/.claude/skills/tdd" ] || fail "tdd should get a .claude/skills symlink"
 [ -f "$T/.agents/skill-sets.json" ] || fail "skill-sets record missing"
-python3 -c "import json,sys; r=json.load(open('$T/.agents/skill-sets.json')); assert [s['name'] for s in r['sets']] == ['mattpocock'], r" || fail "record should list exactly mattpocock"
-grep -q 'pstack' "$T/.agents/skill-sets.json" && fail "pstack should not install by default"
+python3 -c "import json; r=json.load(open('$T/.agents/skill-sets.json')); ns=[s['name'] for s in r['sets']]; assert ns == ['mattpocock','pstack','agent-skills'], ns" \
+  || fail "record should list all three sets in registry order"
+python3 -c "import json; r=json.load(open('$T/.agents/skill-sets.json')); m=r['sets'][0]['installed']; assert 'tdd' in m and 'teach' in m, m" \
+  || fail "tdd and teach must resolve to mattpocock (first set in the list wins)"
+python3 -c "import json; r=json.load(open('$T/.agents/skill-sets.json')); sk=r['sets'][1]['skipped']; assert 'tdd' in sk and 'teach' in sk, sk" \
+  || fail "pstack's record must show tdd and teach as skipped"
 echo "$out" | grep -q '/super-board onboard' || fail "summary is missing the next step"
 n=$(printf '%s\n' "$out" | grep -c '/super-board onboard' || true)
 [ "$n" -eq 1 ] || fail "the next step should be printed once, got $n times: $out"
@@ -126,4 +132,13 @@ grep -q 'SUPER_BOARD_REPO:-vuquangkhtn/suber-super-board' "$GET" \
 grep -q 'npx skills add' "$GET" && fail "the npx helper step must stay deleted (no network, no Node)"
 grep -q 'SUPER_BOARD_TARBALL' "$GET" || fail "the tarball override (used by every case above) is missing"
 
-echo "PASS: test-get.sh (10 cases)"
+# 11 — --sets=mattpocock alone still installs exactly that one set: the flag is a
+#      narrowing filter; only the default widened to all sets.
+T="$WORK/t11"; mkdir -p "$T"
+bash "$GET" --sets=mattpocock --target "$T" >/dev/null 2>&1 || fail "--sets=mattpocock install failed"
+python3 -c "import json; r=json.load(open('$T/.agents/skill-sets.json')); ns=[s['name'] for s in r['sets']]; assert ns == ['mattpocock'], ns" \
+  || fail "--sets=mattpocock must install exactly mattpocock"
+[ ! -e "$T/.agents/skills/how" ] || fail "--sets=mattpocock installed pstack skills"
+[ ! -e "$T/.agents/skills/spec-driven-development" ] || fail "--sets=mattpocock installed agent-skills"
+
+echo "PASS: test-get.sh (11 cases)"

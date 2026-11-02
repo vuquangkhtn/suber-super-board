@@ -209,7 +209,9 @@ step-7 keys were `agents_md` since this fork (upstream called it `agents`). Writ
    ├─ Silent: read `skill-sets/registry.json` (one option per entry in its `sets`; describe each
    │    by its `description` and the count of mapped + anytime skills) and `.agents/skill-sets.json`
    │    (what install.sh put down: per-set skills per step, skipped names) and the `--set`
-   │    parameter if given (either spelling).
+   │    parameter if given (either spelling). A default install.sh run puts every registry set on
+   │    disk (`--sets` defaults to all sets in registry order; a shorter list gives a lean
+   │    picker), so this pick only chooses the guide — the question is always meaningful.
    ├─ AskUserQuestion "Which skill set should guide Plan · Design · Build · Test · Deploy ·
    │    Maintain?" (header "Skill set"), recommended first — one option per registry set, then:
    │    • <set> — <registry description> · <N skills>

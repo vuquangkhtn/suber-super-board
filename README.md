@@ -41,9 +41,9 @@ One command, in your project folder:
 curl -fsSL https://raw.githubusercontent.com/vuquangkhtn/suber-super-board/main/get.sh | bash
 ```
 
-Flags (passed to `install.sh`): `--sets=mattpocock,pstack,agent-skills` (default: `mattpocock`),
-`--hosts=claude,codex,copilot,zcode,other`, plus upstream's `--no-hooks`, `--protect-main`,
-`--no-helper-skills`, `--target <dir>`, `--ref <tag>`.
+Flags (passed to `install.sh`): `--sets=mattpocock,pstack,agent-skills` (default: all three, in
+registry order — pass a shorter list for a lean picker), `--hosts=claude,codex,copilot,zcode,other`,
+plus upstream's `--no-hooks`, `--protect-main`, `--no-helper-skills`, `--target <dir>`, `--ref <tag>`.
 
 Then onboard:
 
@@ -84,7 +84,9 @@ Each set's default mapping (curated; pstack's comes straight from the
 | Maintain | retro, teach, improve-codebase-architecture, writing-for-agents | — (super-board loop covers it) | deprecation-and-migration, documentation-and-adrs, observability-and-instrumentation |
 
 Skill-name collisions across sets (e.g. `tdd` in mattpocock *and* pstack) install once — the
-first set in your `--sets` list wins; the record in `.agents/skill-sets.json` notes the skips.
+first set in your `--sets` list wins (the default order is registry order — mattpocock,
+pstack, agent-skills — so `tdd` and `teach` resolve to mattpocock); the record in
+`.agents/skill-sets.json` notes the skips.
 
 ## Agent support
 
