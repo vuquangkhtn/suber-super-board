@@ -202,24 +202,28 @@ step-7 keys were `agents_md` since this fork (upstream called it `agents`). Writ
       installed there, not here.
 
 2. 🧩 SKILLS — which vendored skill set guides the six lifecycle steps (this fork)
-   ├─ Silent: read `.agents/skill-sets.json` (what install.sh put down: per-set skills per step,
-   │    skipped names) and the `--sets` parameter if given.
+   ├─ Silent: read `skill-sets/registry.json` (one option per entry in its `sets`; describe each
+   │    by its `description` and the count of mapped + anytime skills) and `.agents/skill-sets.json`
+   │    (what install.sh put down: per-set skills per step, skipped names) and the `--sets`
+   │    parameter if given.
    ├─ AskUserQuestion "Which skill set should guide Plan · Design · Build · Test · Deploy ·
-   │    Maintain?" (header "Skill set"), recommended first:
-   │    • mattpocock (Recommended) — grilling interviews, specs, TDD, PRs, retros · 27 skills
-   │    • pstack — deep-first workflows: architect, arena, interrogate, blast-radius · 65 skills
-   │    • agent-skills — Addy Osmani's production practices: spec-driven, security, shipping · 25
+   │    Maintain?" (header "Skill set"), recommended first — one option per registry set, then:
+   │    • <set> — <registry description> · <N skills>
    │    • custom — pick the set for each step, one question per step
-   │    When exactly one set is already on disk and the others are not, THAT one is Recommended.
+   │    mattpocock is Recommended when present; when exactly one set is already on disk and the
+   │    others are not, THAT one is Recommended instead.
    ├─ custom → six AskUserQuestion calls, one per lifecycle step, in order Plan, Design, Build,
-   │    Test, Deploy, Maintain — "Who covers <Step>?" (header "<Step>"), options mattpocock /
-   │    pstack / agent-skills, recommended first (curated default per step):
+   │    Test, Deploy, Maintain — "Who covers <Step>?" (header "<Step>"), one option per registry
+   │    set, recommended first. Curated default per step, when that set exists in the registry:
    │      Plan → mattpocock (research, grilling, to-tickets) · Design → pstack (architect, arena,
    │      interrogate) · Build → mattpocock (implement, tdd, prototype) · Test → agent-skills
    │      (security, browser-testing, code review) · Deploy → pstack (babysit, fix-ci) ·
    │      Maintain → mattpocock (retro, teach)
-   │    Choosing a set that has no skills for that step is allowed (pstack → Maintain): the map's
-   │    table falls back to the super-board loop; say so in one dim line under the option.
+   │    A registry set with no skills for a step is still offered (pstack → Maintain): choosing
+   │    it is allowed — the map's table falls back to the super-board loop; say so in one dim
+   │    line under the option. A set added to the registry after install (e.g. by
+   │    /skill-set-add) shows up here with no further edits; installing it is this step's
+   │    normal `--sets=<chosen union>` run.
    ├─ Install what is not on disk yet, NO question (the pick is the OK):
    │      python3 $SB/super-board-setup.py fix --sets=<chosen union> --hosts=<answers.agents or
    │      .agents/skill-sets.json hosts> --text

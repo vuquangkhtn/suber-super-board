@@ -40,7 +40,7 @@ curl -fsSL https://raw.githubusercontent.com/vuquangkhtn/suber-super-board/main/
 ```
 
 Flags (passed to `install.sh`): `--sets=mattpocock,pstack,agent-skills` (default: `mattpocock`),
-`--hosts=claude,codex,copilot,zcode,other`, plus upstream's `--no-hooks`, `--protect-main`,
+`--hosts=claude,codex,opencode,copilot,zcode,other`, plus upstream's `--no-hooks`, `--protect-main`,
 `--no-helper-skills`, `--target <dir>`, `--ref <tag>`.
 
 Then onboard:
@@ -62,6 +62,39 @@ Review. Enter takes the recommended answer; it resumes if interrupted.
   whose set has no skills (pstack → Maintain) falls back to the board's own loop.
 - **🤖 Agents (step 3)** — multi-select which CLIs the skills must reach; installed CLIs are
   preselected. `claude` is always on; copilot and "other" agents get `AGENTS.md` pass-through notes.
+
+## Use the board
+
+The daily loop, in the project you installed into. super-board has five verbs:
+`onboard` · `lint` · `status` · `run` · `stop` (in Codex they are `$super-board <verb>`).
+
+1. **File tickets** — one issue per task in the card format: Problem · Context ·
+   Fix · Acceptance Criteria · Risk · Blocked by
+   ([docs/agents/issue-tracker.md](docs/agents/issue-tracker.md)). Lint refuses
+   tickets without acceptance criteria.
+2. **Lint** — `/super-board lint` walks the active-pipeline issues, flags vague
+   ACs, and runs pre-flight readiness before anything is built.
+3. **Ready** — move the cards you want drained to the `Ready` column. Labels
+   route them: `qa` skips Building; `bug`, `feature` or no label are built first.
+4. **Run** — `/super-board run` plans waves and hands each card to Build → QA →
+   Review lane agents in their own worktrees, merging what passes the merge gate.
+   Tier: `--low`, default medium, `--high`; `--codex` runs the lanes on Codex.
+5. **Unblock** — cards stop with a 🙋 comment instead of merging when the merge
+   gate needs a human: money, auth, destructive schema, live-DB migrations, or a
+   PR over 400 changed lines. Answer on the issue, then `run` again.
+6. **Watch or stop** — `/super-board status` is a read-only snapshot;
+   `/super-board stop` shuts down gracefully mid-flight. State lives on the
+   GitHub Project board, never in a session — the next `run` resumes where the
+   board says.
+
+Side doors while the board is idle:
+
+| Skill | Use it for |
+|---|---|
+| [`/super-collect`](skills/super-collect/README.md) | Turn Sentry, PostHog, issues or PRs into verified Backlog cards. |
+| [`/ui-refine-loop`](skills/ui-refine-loop/README.md) | Human-driven critique → refine polish of one page or component. |
+| [`/git-sync`](skills/git-sync/README.md) | Commit per logical change, merge-pull, push without force. |
+| [`/visual`](skills/visual/README.md) | A one-off diagram or explainer page. |
 
 ## Skill-set → lifecycle mapping
 
@@ -123,6 +156,28 @@ See upstream's docs in `docs/` and `skills/*/README.md`. Its own 9 skills (6 you
 
 Each name links to that skill's README. Adding a skill? Write its `SKILL.md` and `README.md`,
 add a line to `skills/families.json`, and this table updates itself.
+
+## Develop this repo
+
+This is a skill pack, not an app. Layout: `skills/` the nine board skills ·
+`skill-sets/` vendored sets + `registry.json` · `hooks/` guard hooks ·
+`workflows/` dynamic-workflow definitions · `scripts/` dispatcher and guard
+tooling · `tests/` the offline suite · `docs/` upstream and agent docs.
+
+| Change | How |
+|---|---|
+| Run the checks | `bash tests/run-safety.sh` (offline suite; a pushed `v*` tag runs the same checks before publishing). |
+| Add a skill | Write `skills/<name>/SKILL.md` + `README.md`, add a line to `skills/families.json`, then run the sync below. |
+| Update the README skill tables | `python3 scripts/super-board-readme-sync.py` — generated from SKILL.md frontmatter and `skills/families.json`; never hand-edit between the `<!-- skills:start -->` / `<!-- skills:end -->` markers. |
+| Vendor a new skill set | `/skill-set-add` in this repo only — pins the repo into `skill-sets/`, extends `registry.json`, carries licenses. |
+| Change the board shape | Columns and label routing live in `scripts/super-board-wave-plan.sh`, `workflows/super-board-wave.js` and `skills/super-board/references/run.md` — change all three together. |
+| Change a writing format | `skills/super-board/references/writing-standard.md` first, then the templates and `tests/test_writing_format.py`. |
+| Release | [RELEASING.md](RELEASING.md); publish only if the tag checks pass. |
+| Sync upstream | [UPSTREAM.md](UPSTREAM.md); merge via the `upstream` remote, pins recorded there. |
+
+Agent-facing behavior lives in [AGENTS.md](AGENTS.md); its managed
+`<!-- super-board:begin … -->` blocks are rewritten on upgrade, so edit only
+outside the markers.
 
 ## Credits
 
