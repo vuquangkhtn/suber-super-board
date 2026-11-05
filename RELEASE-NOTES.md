@@ -1,5 +1,39 @@
 # Release notes
 
+## v3.2.0 — 2026-11-05
+
+The fork-superset release: three vendored skill sets, multi-agent install, and a
+one-line installer, on top of upstream v3.1.2.
+
+- ✨ **Three vendored skill sets.** [mattpocock/skills](https://github.com/mattpocock/skills) (27),
+  [pstack](https://github.com/michael-denyer/pstack-claude) (65) and
+  [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) (25) ship pinned in
+  `skill-sets/` (physical store: `.agents/skills/`, linked in from `skill-sets/<set>/`), no
+  network needed at install time. `/skill-set-add` vendors a new GitHub skill repo into the
+  store with licenses carried and the registry validated.
+- ✨ **Lifecycle map.** `skill-sets/registry.json` maps every set onto Plan · Design · Build ·
+  Test · Deploy · Maintain; onboard writes the chosen mapping into `AGENTS.md` and
+  `.claude/super-board/skill-map.json`. Name collisions across sets install once, first set wins.
+- ✨ **Multi-agent install.** `install.sh --hosts=claude,codex,opencode,copilot,zcode,other`
+  wires the same `.agents/skills/` tree for each CLI — Claude gets `.claude/skills/` symlinks,
+  Copilot and other hosts get `AGENTS.md` pass-through notes. `--sets` defaults to all three
+  vendored sets in registry order.
+- ✨ **Onboard parameters.** `/super-board onboard --set=pstack --agents=claude,codex`
+  pre-answers the Skills and Agents steps (`--sets` is a deprecated alias); `--set=custom`
+  still asks one question per lifecycle step.
+- ✨ **One-line installer.** `curl -fsSL https://raw.githubusercontent.com/vuquangkhtn/suber-super-board/main/get.sh | bash`
+  fetches the latest release (falls back to `main`) and runs `install.sh`; flags pass through.
+  The repo is public, so the raw and codeload URLs work unauthenticated (fixes #17).
+- 📝 **README guides.** A use-the-board loop (ticket format, lint, Ready, run tiers, 🙋 gates,
+  stop/resume) and a develop-this-repo section (layout, offline suite, readme-sync contract,
+  vendoring, board-shape rule); `--hosts` docs now list `opencode`.
+- 🧪 **Offline suites for every fork delta.** Registry integrity + dangling-link checks,
+  get.sh installs from a file:// tarball, install default-order/collision QA, skill-set-sync
+  and skill-set-add fixtures, onboard set/agents parameters — 59 offline suites at this
+  release. The
+  cross-platform smoke check runs the status reader's no-config path from a scratch dir now
+  that the pack self-hosts its own board (`.claude/super-board/configs/` is committed).
+
 ## v3.1.2 — 2026-10-11
 
 `/super-collect` dedupes on the exact fingerprint and says when Sentry or PostHog is down.
