@@ -39,14 +39,18 @@ jobs:
 
       # Step 2 — exercise the "no config + no active marker + no single
       # config" path of super-board-status.py. Documented to exit 64.
-      # Runs in the repo root, where no `.claude/super-board/configs/` exists.
+      # Runs in a scratch dir, not the repo root: the pack self-hosts its own
+      # board, so `.claude/super-board/configs/` is committed and the script
+      # would take the gh path (exit 67) instead of the no-config path.
       - name: status — no-config path exits 64
         shell: bash
         run: |
+          scratch="$(mktemp -d)"
           set +e
-          python scripts/super-board-status.py
+          (cd "$scratch" && python "$GITHUB_WORKSPACE/scripts/super-board-status.py")
           ec=$?
           set -e
+          rm -rf "$scratch"
           if [ "$ec" -ne 64 ]; then
             echo "::error::Expected exit 64 (no config), got $ec"
             exit 1
