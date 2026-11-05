@@ -90,4 +90,36 @@ grep -q 'Proceed past Route (Phase 3) without the user.s confirmed classificatio
 grep -q 'Every request gets a route' skills/super-plan/SKILL.md \
   || fail "#19: phase 1 does not route every request (sharp or not) through phase 3"
 
-echo "PASS: super-plan skill wiring (issue #18 ACs 1/2/4 + sync · issue #19 AC1/AC2 wiring)"
+# ---- issue #20 (phase 4 Design wiring) ----
+phase4() { awk '/^## Phase 4/,/^## Phase 5/' skills/super-plan/SKILL.md; }
+
+# AC1 — phase 4: design source is the map's design step, read at run time; graceful degradation
+phase4 | grep -q 'skill-map.json` → `steps.design.skills`' \
+  || fail "#20 AC1: phase 4 does not name the map's design step (steps.design.skills) as design source"
+phase4 | grep -q 'read at run time, never hardcoded' \
+  || fail "#20 AC1: design source is not read at run time"
+phase4 | grep -q 'work the design directly in-chat' \
+  || fail "#20 AC1: degrade path (map/design step missing or empty → design in-chat) missing"
+grep -q 'never invent one' skills/super-plan/SKILL.md \
+  || fail "#20 AC1: never-invent-one-set's-skill-names rule missing"
+# the placeholder is gone now that phase 4 has landed
+grep -q 'ticket #20' skills/super-plan/SKILL.md \
+  && fail "#20: 'ticket #20' placeholder still present in SKILL.md"
+grep -q 'arrives in #20' skills/super-plan/SKILL.md \
+  && fail "#20: 'arrives in #20' placeholder still present in SKILL.md"
+# the named source exists and is non-empty where the map is installed (onboard artifact, optional)
+if [ -f .claude/super-board/skill-map.json ]; then
+  jq -e '.steps.design.skills | length > 0' .claude/super-board/skill-map.json >/dev/null \
+    || fail "#20 AC1: installed skill-map.json design step has no skills"
+fi
+
+# AC2 — never-list: design artifacts throwaway-only, product code never edited
+grep -q 'Keep design artifacts throwaway-only' skills/super-plan/SKILL.md \
+  || fail "#20 AC2: never-list design-artifacts throwaway-only item missing"
+grep -q 'product code is never edited' skills/super-plan/SKILL.md \
+  || fail "#20 AC2: never-list product-code-never-edited restatement missing"
+# medium-only gate: phase 3 routes medium to phase 4, small skips it
+phase3 | grep -q 'medium → Phase 4 (Design)' \
+  || fail "#20: phase 3 no longer routes medium → Phase 4 (Design)"
+
+echo "PASS: super-plan skill wiring (issue #18 ACs 1/2/4 + sync · issue #19 AC1/AC2 wiring · issue #20 AC1/AC2 wiring)"
