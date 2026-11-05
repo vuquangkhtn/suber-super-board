@@ -1,0 +1,6 @@
+CALL: gh issue create -R vuquangkhtn/suber-super-board --title 🎨 [feature] visual: dark theme tokens for generated page --body-file /tmp/super-plan-qa/card-1.md --label feature
+CALL: gh project item-add 2 --owner vuquangkhtn --url https://github.com/vuquangkhtn/suber-super-board/issues/9001 --format json --jq .id
+CALL: gh project item-edit --id ITEM-ID-FAKE --project-id PVT_kwHOAVKc0M4BpYT4 --field-id PVTSSF_lAHOAVKc0M4BpYT4zhn0ONY --single-select-option-id 40ee6325
+CALL: gh issue create -R vuquangkhtn/suber-super-board --title 🎨 [feature] visual: dark-mode toggle button with persistence --body-file /tmp/super-plan-qa/card-2.md --label feature
+CALL: gh project item-add 2 --owner vuquangkhtn --url https://github.com/vuquangkhtn/suber-super-board/issues/9001 --format json --jq .id
+CALL: gh project item-edit --id ITEM-ID-FAKE --project-id PVT_kwHOAVKc0M4BpYT4 --field-id PVTSSF_lAHOAVKc0M4BpYT4zhn0ONY --single-select-option-id 40ee6325
