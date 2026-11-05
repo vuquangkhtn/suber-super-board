@@ -8,7 +8,7 @@ cd "$(dirname "$0")/.."
 
 fail() { echo "FAIL: $1" >&2; exit 1; }
 
-BOARD_SKILLS="super-board super-build super-qa super-review super-collect ui-refine-loop visual git-sync"
+BOARD_SKILLS="super-board super-build super-qa super-review super-collect super-plan ui-refine-loop visual git-sync"
 
 # 1 — no symlinked (or missing) skill dirs in .agents/skills
 for d in .agents/skills/*/; do

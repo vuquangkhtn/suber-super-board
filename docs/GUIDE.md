@@ -105,6 +105,10 @@ hallucinated, not clarified (the loop even refuses to start with AC-less tickets
 active columns). Lint is also where you answer the flagged issues, while you are still in
 the loop. Full contract: `references/lint.md`.
 
+Want the request turned into tickets instead of writing them by hand? `/super-plan`
+conducts the mapped plan/design skills, drafts the cards, and files them after your
+approval — opt-in; `/super-board run` never requires it.
+
 ## 5. Drain the board
 
 ```

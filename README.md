@@ -15,7 +15,7 @@
 
 A fork-superset of [EricTechPro/super-board](https://github.com/EricTechPro/super-board) —
 the autonomous GitHub-Project loop where you add task cards to `Ready` and the board drains
-itself into merged PRs with evidence: 10 skills (7 you type, 3 the board runs), six guard
+itself into merged PRs with evidence: 11 skills (8 you type, 3 the board runs), six guard
 hooks, one merge gate — extended here with:
 
 1. **Three vendored skill sets** you can onboard with: [mattpocock/skills](https://github.com/mattpocock/skills),
@@ -138,15 +138,16 @@ Unchanged from upstream: `/super-board run <slug>` plans waves, runs the Build �
 lanes (worktrees, draft PRs, evidence, merge gate with `verify_commands`), six guard hooks,
 `/super-collect` for Sentry/PostHog/issues/PRs, `/ui-refine-loop`, `/visual`, `/git-sync`,
 `/skill-set-add` to vendor a new skill set (pack repo only).
-See upstream's docs in `docs/` and `skills/*/README.md`. Its own 10 skills (7 you type, 3 the board runs):
+See upstream's docs in `docs/` and `skills/*/README.md`. Its own 11 skills (8 you type, 3 the board runs):
 
 <!-- skills:start -->
-**You type — 7 skills**
+**You type — 8 skills**
 
 | Skill | What it does |
 |---|---|
 | [`/super-board`](skills/super-board/README.md) | Orchestrator: plans waves, runs Build → QA → Review, merges when green. |
 | [`/super-collect`](skills/super-collect/README.md) | Finds problems (Sentry, PostHog, issues, PRs, architecture) and files verified Backlog cards. |
+| [`/super-plan`](skills/super-plan/README.md) | Turns a request into approved board cards by conducting the mapped plan/design skills. |
 | [`/ui-refine-loop`](skills/ui-refine-loop/README.md) | Critique → refine loop that polishes one page or component. |
 | [`/visual`](skills/visual/README.md) | One HTML page: branch recap, plan, or codebase map with diagrams. |
 | [`/git-sync`](skills/git-sync/README.md) | Commit per logical change, merge-pull, push without force, report. |
@@ -167,7 +168,7 @@ add a line to `skills/families.json`, and this table updates itself.
 
 ## Develop this repo
 
-This is a skill pack, not an app. Layout: `skills/` the nine board skills ·
+This is a skill pack, not an app. Layout: `skills/` the eleven board skills ·
 `skill-sets/` vendored sets + `registry.json` · `hooks/` guard hooks ·
 `workflows/` dynamic-workflow definitions · `scripts/` dispatcher and guard
 tooling · `tests/` the offline suite · `docs/` upstream and agent docs.
