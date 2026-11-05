@@ -33,8 +33,8 @@ product code (the cardinal rule): the board's lanes do that.
   only after the user approves them. The summary lives in the conversation; there is no new
   artifact store — the only surviving state is the filed cards.
 - **Never list.** Never build, test or merge product code (cardinal rule). Never edit files
-  outside throwaway prototype artifacts (a scratch file the user asked for, then deleted).
-  Every acceptance criterion on a drafted card must be checkable by a test.
+  outside throwaway design artifacts (a prototype, structure sketch or spec the user asked
+  for, then deleted). Every acceptance criterion on a drafted card must be checkable by a test.
 
 ## Invocation
 
@@ -44,8 +44,8 @@ product code (the cardinal rule): the board's lanes do that.
 | `/super-plan <request>` | same, with the request text up front |
 | `/super-plan --draft-only` | draft and show the cards; never file |
 
-Phase 4 (Design) arrives in #20; until it lands, a medium route continues after Clarify with
-the design choices listed as open questions for the user.
+Design (Phase 4) runs for medium routes only: small skips it, huge stops at the wayfinder
+handoff — the route confirmation decides.
 
 ## Phase 1 — Orient
 
@@ -90,12 +90,31 @@ the design choices listed as open questions for the user.
    — then stop before any design or drafting. Misroutes are the expensive failure mode (a huge
    effort silently treated as medium), so the user confirms the classification; on disagreement,
    re-classify with their input, never argue them into yours.
-3. After confirmation: small → Phase 5 (Draft cards); medium → Phase 4 (Design — ticket #20;
-   until it lands, continue to Phase 5 with the design choices listed as open questions).
+3. After confirmation: small → Phase 5 (Draft cards); medium → Phase 4 (Design); huge → the
+   handoff in step 4.
 4. Huge → hand off to `wayfinder` and stop: point the user at the wayfinder skill with the
    request and what Clarify surfaced, then stop — super-plan files nothing after a handoff and
    never re-implements the map machinery (invariant). The map's plan step has no wayfinder
    skill → say so and stop for the user's call; never plan a huge effort as small or medium.
+
+## Phase 4 — Design
+
+Medium routes only — the route Phase 3 confirmed is what design conducts over.
+
+1. The design work's source is the map's `design` step (`skill-map.json` → `steps.design.skills`):
+   those are the design skills super-plan conducts over the settled route — read at run time, never hardcoded.
+   The map or its design step is missing or empty → say which, then work the design directly in-chat
+   (super-plan still proposes, the user decides) — never invent one set's skill names from memory.
+2. Produce or update only the artifact the request needs — a prototype, a structure sketch, or
+   a spec — in the producing skill's own conventions. Design artifacts are throwaway-only:
+   shown in-chat (or a scratch file the user asked for, then deleted), no artifact store, and
+   product code is never edited (invariant above; the Never list restates it).
+3. Show the artifact and wait for the user's reaction — strict HITL: the user's words are the
+   only accepted design decision, and super-plan never approves its own artifact. A reaction
+   that changes the design sends the affected points back through this phase.
+4. Design settled → Phase 5 (Draft cards); the settled design feeds the drafts — a drafted
+   card's Context or Fix cites the design decision it implements. Design still contested →
+   back to Phase 2 for the open points; never draft cards off a contested design.
 
 ## Phase 5 — Draft cards
 
@@ -141,7 +160,9 @@ the design choices listed as open questions for the user.
 ## Never
 
 - Build, test, review or merge product code — the lanes own all of that.
-- Edit any file outside a throwaway prototype artifact the user explicitly asked for.
+- Edit any file outside a throwaway design artifact the user explicitly asked for.
+- Keep design artifacts throwaway-only: prototype, structure sketch and spec are scratch the
+  user reacts to in-chat — no artifact store, and product code is never edited.
 - Write an acceptance criterion no test could assert ("works well", "is fast").
 - Answer super-plan's own interview questions, or approve its own drafts.
 - File a card the user has not approved, or add an artifact store for the summary.

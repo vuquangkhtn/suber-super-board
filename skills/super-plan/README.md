@@ -36,7 +36,8 @@ skill routing; without one it still drafts and files, and says routing is unavai
 
 ## Status
 
-#18 shipped the sharp path — Orient · Draft cards · Review + file. #19 adds Clarify (the mapped
+#18 shipped the sharp path — Orient · Draft cards · Review + file. #19 added Clarify (the mapped
 interview skills, never self-answered) and Route (small/medium/huge by wayfinder's fog test,
-confirmed by the user; huge hands off to `wayfinder` and stops). Design lands in #20; until
-then a medium route continues after Clarify with the design choices listed as open questions.
+confirmed by the user; huge hands off to `wayfinder` and stops). #20 completes the recipe with
+Design — the mapped design skills produce the prototype / structure sketch / spec the request
+needs, throwaway-only, and the user reacts to the artifacts before any card is drafted.
