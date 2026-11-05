@@ -27,7 +27,8 @@ product code (the cardinal rule): the board's lanes do that.
   gracefully: say which step has no skills, fall back to the board's own loop, and continue —
   never invent one set's skill names from memory.
 - **Opt-in, not a run gate.** `/super-board run` never requires super-plan. With an
-  already-clear request, skip straight to drafting (Phase 5) — no interviews for their own sake.
+  already-clear request, skip Clarify (Phase 2) and go straight to Route (Phase 3) — no
+  interviews for their own sake; Route's one confirmation is not an interview.
 - **Draft-then-file.** Card drafts and the decision summary are shown in-chat; cards are filed
   only after the user approves them. The summary lives in the conversation; there is no new
   artifact store — the only surviving state is the filed cards.
@@ -39,12 +40,12 @@ product code (the cardinal rule): the board's lanes do that.
 
 | Command | Does |
 |---|---|
-| `/super-plan` | full sharp path: Orient → (skip to) Draft cards → Review + file |
+| `/super-plan` | full path: Orient → Clarify (if foggy) → Route → Design (medium) → Draft cards → Review + file |
 | `/super-plan <request>` | same, with the request text up front |
 | `/super-plan --draft-only` | draft and show the cards; never file |
 
-Phases 2–4 (Clarify · Route · Design) arrive in follow-up tickets (#19, #20); until they land,
-an unclear request is drafted as far as it goes and the open questions are listed for the user.
+Phase 4 (Design) arrives in #20; until it lands, a medium route continues after Clarify with
+the design choices listed as open questions for the user.
 
 ## Phase 1 — Orient
 
@@ -54,10 +55,47 @@ an unclear request is drafted as far as it goes and the open questions are liste
 2. Judge sharpness: does the request already say **what** to build, for **whom**, and
    **what done looks like** — well enough that you could draft checkable ACs without inventing
    product answers?
-   - Already sharp → skip to Phase 5 (Draft cards). Opt-in means no ceremony.
-   - Not sharp → list the exact open questions and stop; until #19/#20 land, the user answers
-     in-chat and you re-judge. Do not guess product answers into a draft.
-3. Huge multi-session effort → the wayfinder handoff (invariant above). Otherwise continue.
+   - Already sharp → skip Phase 2 (Clarify) and go to Phase 3 (Route). Opt-in means no
+     interviews for their own sake.
+   - Not sharp → Phase 2 (Clarify), with the exact open questions listed. Do not guess
+     product answers into a draft.
+3. Route the request before any design or drafting → Phase 3. Every request gets a route,
+   sharp or not — a sharp huge request still goes to wayfinder.
+
+## Phase 2 — Clarify
+
+1. The interview's source is the map's `plan` step (`skill-map.json` → `steps.plan.skills`):
+   those are the interview skills super-plan conducts, read at run time, never hardcoded.
+   The map or its plan step is missing or empty → say which, then interview directly in-chat
+   (super-plan still only asks, never answers) — never invent one set's skill names from memory.
+2. Interview on what is actually unclear: take the open questions from Phase 1's sharpness
+   judgment and work the mapped skills over them, one unresolved point at a time. Ask only
+   what the request has not settled — never re-ask what it already answers.
+3. Never self-answer (strict HITL): every question goes to the user, and the user's words are
+   the only accepted answers. A new answer that changes what the request needs sends the
+   affected points back through this phase.
+4. Re-judge sharpness on the answers. Fog cleared → Phase 3 with the request as understood;
+   still foggy → ask what remains, and proceed past a remaining open point only when the user
+   says to (invariant above).
+
+## Phase 3 — Route
+
+1. Classify with wayfinder's fog test: will the decisions settle inside one session — is the
+   way to the destination already clear, the whole journey small enough for one session?
+   - **small** — one vertical slice, no design step worth its own phase: clarify → cards.
+   - **medium** — several slices or real design choices, still one session: clarify → design → cards.
+   - **huge** — the decisions will not settle inside one session, even split one card per
+     vertical slice: the wayfinder handoff (step 4).
+2. Show the route and wait for confirmation: one line — `medium: clarify → design → cards — ok?`
+   — then stop before any design or drafting. Misroutes are the expensive failure mode (a huge
+   effort silently treated as medium), so the user confirms the classification; on disagreement,
+   re-classify with their input, never argue them into yours.
+3. After confirmation: small → Phase 5 (Draft cards); medium → Phase 4 (Design — ticket #20;
+   until it lands, continue to Phase 5 with the design choices listed as open questions).
+4. Huge → hand off to `wayfinder` and stop: point the user at the wayfinder skill with the
+   request and what Clarify surfaced, then stop — super-plan files nothing after a handoff and
+   never re-implements the map machinery (invariant). The map's plan step has no wayfinder
+   skill → say so and stop for the user's call; never plan a huge effort as small or medium.
 
 ## Phase 5 — Draft cards
 
@@ -107,3 +145,5 @@ an unclear request is drafted as far as it goes and the open questions are liste
 - Write an acceptance criterion no test could assert ("works well", "is fast").
 - Answer super-plan's own interview questions, or approve its own drafts.
 - File a card the user has not approved, or add an artifact store for the summary.
+- Proceed past Route (Phase 3) without the user's confirmed classification, or plan a huge
+  effort as small or medium.

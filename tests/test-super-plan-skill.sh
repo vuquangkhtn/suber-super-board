@@ -47,4 +47,47 @@ grep -q -- '--draft-only' skills/super-plan/SKILL.md || fail "--draft-only (neve
 grep -q 'Column: \*\*Backlog\*\* by default' skills/super-plan/SKILL.md \
   || fail "Backlog-default column rule missing"
 
-echo "PASS: super-plan skill wiring (issue #18 ACs 1/2/4 + sync)"
+# ---- issue #19 (phase 2 Clarify + phase 3 Route wiring) ----
+phase2() { awk '/^## Phase 2/,/^## Phase 3/' skills/super-plan/SKILL.md; }
+phase3() { awk '/^## Phase 3/,/^## Phase 5/' skills/super-plan/SKILL.md; }
+
+# AC1 — phase 2: interview source is the map's plan step, read at run time; never self-answer
+phase2 | grep -q 'skill-map.json` → `steps.plan.skills`' \
+  || fail "#19 AC1: phase 2 does not name the map's plan step (steps.plan.skills) as interview source"
+phase2 | grep -q 'read at run time, never hardcoded' \
+  || fail "#19 AC1: interview source is not read at run time"
+phase2 | grep -q 'Never self-answer (strict HITL)' \
+  || fail "#19 AC1: phase 2 lacks the never-self-answer rule"
+phase2 | grep -q 'interview directly in-chat' \
+  || fail "#19 AC1: degrade path (map/plan step missing or empty → in-chat interview) missing"
+grep -q 'Answer super-plan.s own interview questions' skills/super-plan/SKILL.md \
+  || fail "#19 AC1: never-list self-answer item missing"
+# the named source exists and is non-empty where the map is installed (onboard artifact, optional)
+if [ -f .claude/super-board/skill-map.json ]; then
+  jq -e '.steps.plan.skills | length > 0' .claude/super-board/skill-map.json >/dev/null \
+    || fail "#19 AC1: installed skill-map.json plan step has no skills"
+fi
+
+# AC2 — phase 3: small/medium/huge via fog test; route confirmed before design/drafting;
+#       huge → wayfinder handoff and stop
+phase3 | grep -q 'fog test' || fail "#19 AC2: phase 3 does not use wayfinder's fog test"
+for tier in small medium huge; do
+  phase3 | grep -q "\*\*$tier\*\*" || fail "#19 AC2: phase 3 lacks the **$tier** classification"
+done
+phase3 | grep -q 'wait for confirmation' \
+  || fail "#19 AC2: phase 3 does not wait for the user's confirmation of the route"
+phase3 | grep -q 'stop before any design or drafting' \
+  || fail "#19 AC2: phase 3 does not stop before design/drafting"
+phase3 | grep -q 'hand off to `wayfinder` and stop' \
+  || fail "#19 AC2: huge route lacks the wayfinder handoff-and-stop"
+phase3 | grep -q 'files nothing after a handoff' \
+  || fail "#19 AC2: huge route does not stop filing after the handoff"
+phase3 | grep -q 'never plan a huge effort as small or medium' \
+  || fail "#19 AC2: misroute guard (huge never planned as small/medium) missing"
+grep -q 'Proceed past Route (Phase 3) without the user.s confirmed classification' \
+  skills/super-plan/SKILL.md \
+  || fail "#19 AC2: never-list route-confirmation item missing"
+grep -q 'Every request gets a route' skills/super-plan/SKILL.md \
+  || fail "#19: phase 1 does not route every request (sharp or not) through phase 3"
+
+echo "PASS: super-plan skill wiring (issue #18 ACs 1/2/4 + sync · issue #19 AC1/AC2 wiring)"
