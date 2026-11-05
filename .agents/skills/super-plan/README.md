@@ -24,7 +24,7 @@ Conducts a request through the mapped plan/design skills and files approved boar
 
 | Command | Does |
 |---|---|
-| `/super-plan` | Orient → (skip to) Draft cards → Review + file |
+| `/super-plan` | Orient → Clarify (if foggy) → Route → Design (medium) → Draft cards → Review + file |
 | `/super-plan <request>` | same, with the request text up front |
 | `/super-plan --draft-only` | show the drafts; never file |
 
@@ -36,6 +36,7 @@ skill routing; without one it still drafts and files, and says routing is unavai
 
 ## Status
 
-This ticket ships the sharp path — Orient · Draft cards · Review + file. Clarify, Route and
-Design land in follow-up tickets (#19, #20); an unclear request is drafted as far as it goes
-with its open questions listed.
+#18 shipped the sharp path — Orient · Draft cards · Review + file. #19 adds Clarify (the mapped
+interview skills, never self-answered) and Route (small/medium/huge by wayfinder's fog test,
+confirmed by the user; huge hands off to `wayfinder` and stops). Design lands in #20; until
+then a medium route continues after Clarify with the design choices listed as open questions.
