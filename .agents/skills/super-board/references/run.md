@@ -67,6 +67,8 @@ Progress: ✅ onboard  →  ✅ lint  →  🤖 run (you are here)
 
 ## Lanes and label routing
 
+Request routing: a request that wants planning or design before run → `/super-plan` (conducts the mapped plan/design skills into board cards; `/super-board run` never requires it).
+
 One board shape (v3.0.0): Backlog · Ready · Building · QA · Review · Blocked · Done. A card's
 label picks its path — three labels, no per-board variant:
 
