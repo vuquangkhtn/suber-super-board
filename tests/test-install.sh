@@ -265,8 +265,8 @@ OUT=$(SUPER_BOARD_QUIET_NEXT=1 "$INSTALL" "$T" 2>&1)
 echo "$OUT" | grep -q "next:" && fail "quiet mode must not print the next step"
 echo "$OUT" | grep -q "✓ skills, scripts and workflows → .claude/" || fail "quiet mode should print the grouped files line"
 echo "$OUT" | grep -q "🛡️  6 guard hooks → .claude/settings.json (new file)" || fail "guard line should count hooks, got: $OUT"
-# This fork installs vendored skill sets even without --sets (default mattpocock),
-# so quiet mode carries one extra grouped line: the sets summary.
+# This fork installs vendored skill sets even without --sets (default: all sets
+# in registry order), so quiet mode carries one extra grouped line: the sets summary.
 [ "$(echo "$OUT" | wc -l | tr -d ' ')" -le 4 ] || fail "grouped output should be ≤ 4 lines here, got: $OUT"
 rm -rf "$T"
 

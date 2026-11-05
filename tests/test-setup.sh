@@ -43,9 +43,10 @@ done
 
 # 1c — this fork: check reports what install.sh put into .agents/skills — the
 #     installed skill sets and the wired hosts — from the install record.
-#     (Scenario 1's fix ran install.sh with its default set, so bare carries one.)
+#     (Scenario 1's fix ran install.sh with its default sets, so bare carries all
+#     three in registry order.)
 OUT=$(python3 "$SETUP" check --root "$T" || true)
-echo "$OUT" | q '.skill_sets.names == ["mattpocock"] and .skill_sets.hosts == ["claude"]' \
+echo "$OUT" | q '.skill_sets.names == ["mattpocock","pstack","agent-skills"] and .skill_sets.hosts == ["claude"]' \
   || fail "check should read .agents/skill-sets.json: $OUT"
 TXT=$(python3 "$SETUP" check --root "$T" --text || true)
 echo "$TXT" | grep -q "✓ skill sets installed: mattpocock" \

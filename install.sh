@@ -10,15 +10,17 @@
 # and leaves settings.json untouched. --protect-main also wires the opt-in
 # guard that blocks direct and force pushes to main/master/base_branch; with
 # --no-hooks it installs that one guard alone. The installer asks nothing:
-# super-board onboard asks the questions (protect main is one of them).
+# super-board onboard asks the questions (protect main is one of them). Onboard's
+# own parameter is --set=<one set> (deprecated alias --sets) — distinct from this
+# script's comma-list --sets below.
 #
 # This fork (suber-super-board) also installs vendored skill sets from
 # skill-sets/ (see skill-sets/registry.json) into the target's agent-neutral
 # .agents/skills/ tree:
-#   --sets=<list>        comma list of mattpocock|pstack|agent-skills
-#                        (default: mattpocock). A skill name already installed
-#                        by an earlier set in the list wins; later ones are
-#                        recorded as skipped in .agents/skill-sets.json.
+#   --sets=<list>        comma list of mattpocock|pstack|agent-skills. Default:
+#                        all vendored sets in registry order; a shorter list is
+#                        a lean picker. A name installed by an earlier set wins;
+#                        later ones record as skipped in .agents/skill-sets.json.
 #   --no-helper-skills   install no skill sets (upstream flag, kept working)
 #   --hosts=<list>       comma list of claude,codex,opencode,copilot,zcode,other.
 #                        claude is always wired (the board pack lives in
@@ -41,7 +43,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HOOKS=1
 PROTECT=0
-SETS="mattpocock"
+SETS="mattpocock,pstack,agent-skills"
 HOSTS=""
 TARGET=""
 for arg in "$@"; do
@@ -51,7 +53,7 @@ for arg in "$@"; do
     --sets=*) SETS="${arg#--sets=}" ;;
     --hosts=*) HOSTS="${arg#--hosts=}" ;;
     --no-helper-skills) SETS="" ;;
-    -h|--help) sed -n '2,26p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,28p' "$0"; exit 0 ;;
     -*) echo "unknown option: $arg" >&2; exit 64 ;;
     *) TARGET="$arg" ;;
   esac

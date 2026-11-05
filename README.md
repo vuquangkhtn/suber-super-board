@@ -15,7 +15,7 @@
 
 A fork-superset of [EricTechPro/super-board](https://github.com/EricTechPro/super-board) —
 the autonomous GitHub-Project loop where you add task cards to `Ready` and the board drains
-itself into merged PRs with evidence: 9 skills (6 you type, 3 the board runs), six guard
+itself into merged PRs with evidence: 10 skills (7 you type, 3 the board runs), six guard
 hooks, one merge gate — extended here with:
 
 1. **Three vendored skill sets** you can onboard with: [mattpocock/skills](https://github.com/mattpocock/skills),
@@ -31,6 +31,8 @@ hooks, one merge gate — extended here with:
 
 Everything upstream is unchanged otherwise — provenance and pins: [UPSTREAM.md](UPSTREAM.md).
 
+**New here?** [docs/GUIDE.md](docs/GUIDE.md) is the end-to-end usage guideline: prerequisites → install → onboard → drain the board → human gates → recovery → troubleshooting.
+
 ## Install
 
 One command, in your project folder:
@@ -39,16 +41,19 @@ One command, in your project folder:
 curl -fsSL https://raw.githubusercontent.com/vuquangkhtn/suber-super-board/main/get.sh | bash
 ```
 
-Flags (passed to `install.sh`): `--sets=mattpocock,pstack,agent-skills` (default: `mattpocock`),
-`--hosts=claude,codex,opencode,copilot,zcode,other`, plus upstream's `--no-hooks`, `--protect-main`,
-`--no-helper-skills`, `--target <dir>`, `--ref <tag>`.
+Flags (passed to `install.sh`): `--sets=mattpocock,pstack,agent-skills` (default: all three, in
+registry order — pass a shorter list for a lean picker), `--hosts=claude,codex,opencode,copilot,zcode,other`,
+plus upstream's `--no-hooks`, `--protect-main`, `--no-helper-skills`, `--target <dir>`, `--ref <tag>`.
 
 Then onboard:
 
 ```
 /super-board onboard                                   # interactive wizard
-/super-board onboard --sets=pstack --agents=claude,codex
+/super-board onboard --set=pstack --agents=claude,codex
 ```
+
+Onboard takes one set: `--set=pstack` (`--sets` is a deprecated alias) — install.sh's `--sets=a,b`
+is the comma list.
 
 ## The onboard wizard (10 steps)
 
@@ -112,7 +117,9 @@ Each set's default mapping (curated; pstack's comes straight from the
 | Maintain | retro, teach, improve-codebase-architecture, writing-for-agents | — (super-board loop covers it) | deprecation-and-migration, documentation-and-adrs, observability-and-instrumentation |
 
 Skill-name collisions across sets (e.g. `tdd` in mattpocock *and* pstack) install once — the
-first set in your `--sets` list wins; the record in `.agents/skill-sets.json` notes the skips.
+first set in your `--sets` list wins (the default order is registry order — mattpocock,
+pstack, agent-skills — so `tdd` and `teach` resolve to mattpocock); the record in
+`.agents/skill-sets.json` notes the skips.
 
 ## Agent support
 
@@ -131,10 +138,10 @@ Unchanged from upstream: `/super-board run <slug>` plans waves, runs the Build �
 lanes (worktrees, draft PRs, evidence, merge gate with `verify_commands`), six guard hooks,
 `/super-collect` for Sentry/PostHog/issues/PRs, `/ui-refine-loop`, `/visual`, `/git-sync`,
 `/skill-set-add` to vendor a new skill set (pack repo only).
-See upstream's docs in `docs/` and `skills/*/README.md`. Its own 9 skills (6 you type, 3 the board runs):
+See upstream's docs in `docs/` and `skills/*/README.md`. Its own 10 skills (7 you type, 3 the board runs):
 
 <!-- skills:start -->
-**You type — 6 skills**
+**You type — 7 skills**
 
 | Skill | What it does |
 |---|---|
@@ -144,6 +151,7 @@ See upstream's docs in `docs/` and `skills/*/README.md`. Its own 9 skills (6 you
 | [`/visual`](skills/visual/README.md) | One HTML page: branch recap, plan, or codebase map with diagrams. |
 | [`/git-sync`](skills/git-sync/README.md) | Commit per logical change, merge-pull, push without force, report. |
 | [`/skill-set-add`](skills/skill-set-add/README.md) | Vendors a GitHub skill repo into skill-sets/ + registry.json, licenses carried, validated. |
+| [`/skill-set-sync`](skills/skill-set-sync/README.md) | Syncs a vendored skill set from upstream: store, registry pin, UPSTREAM.md, removals flagged, validated. |
 
 **The board runs — 3 lanes**
 

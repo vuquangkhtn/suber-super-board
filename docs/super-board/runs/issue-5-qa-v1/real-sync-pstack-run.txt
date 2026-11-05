@@ -1,0 +1,832 @@
+## 2. real sync --ref HEAD · full validation (no --no-validate)
+registry ok: every vendored skill mapped or anytime, every mapping vendored
+PASS: test-registry.sh
+::group::tests/test-agents-md.sh
+PASS: test-agents-md.sh (15 scenarios)
+::endgroup::
+::group::tests/test-agents-skills-sync.sh
+PASS: test-agents-skills-sync.sh
+::endgroup::
+::group::tests/test-card.sh
+  ✅ cold move = 2 reads + 1 mutation, this board's item
+  ✅ warm move = 1 mutation
+  ✅ cache holds ids, ignores itself
+  ✅ stale option id → one re-read, one retry
+  ✅ unknown Status refused
+  ✅ status = 1 live read
+  ✅ issue not on this board → 3
+  ✅ items in gh item-list shape
+  ✅ incomplete board read refused
+PASS: 9 card-helper checks
+::endgroup::
+::group::tests/test-cleanup-wt.sh
+PASS: test-cleanup-wt.sh
+::endgroup::
+::group::tests/test-codex-lane.sh
+PASS: test-codex-lane.sh (model/ladders/router/review/sandbox/results/wave/halt/cancellation)
+::endgroup::
+::group::tests/test-codex-stop.sh
+PASS: test-codex-stop.sh (stop order, control markers, reused PID)
+::endgroup::
+::group::tests/test-collect-baseline.sh
+── the fixtures themselves are valid tickets
+  ✅ BUG fixture plans as would-file
+  ✅ BUG fixture files with --yes
+  ✅ GAP fixture plans as would-file
+  ✅ GAP fixture files with --yes
+  ✅ FIX fixture plans as would-file
+  ✅ FIX fixture files with --yes
+── dedupe: open hit → 'Seen again' comment, never a second card
+  ✅ dry-run plans a duplicate
+  ✅ --yes returns the existing issue
+  ✅ comments on #301
+  ✅ comment opens with 'Seen again' and the source
+  ✅ comment carries the new evidence
+  ✅ no issue create
+  ✅ no labels or board moves on a duplicate
+  ✅ open beats closed when both exist
+  ✅ dedupe is repo-wide: any state, 500 issues
+── dedupe: closed-only hit → recurrence, filed again naming the closed issue
+  ✅ dry-run plans a recurrence
+  ✅ --yes files a new issue
+  ✅ body names the closed issue
+  ✅ body keeps the same fingerprint
+  ✅ no comment on the closed issue
+── ticket format: Problem · Context · Fix · Acceptance Criteria · Risk
+  ✅ feature without Risk is refused
+  ✅ …and the error names the section
+  ✅ feature without Context is refused
+  ✅ Acceptance Criteria must be a checklist
+  ✅ prs fix without Evidence is refused
+  ✅ refactor without Fix is refused
+  ✅ bug without Context is refused on --yes (QA filer)
+  ✅ …and nothing is created
+  ✅ bug without Context is refused on the dry-run too
+  ✅ …and the dry-run error names the section
+  ✅ …and the dry-run writes nothing
+  ✅ bug Evidence table needs all 12 rows
+── no holding column → refused with 65, nothing written
+  ✅ board [Ready QA Done] refuses
+  ✅ board [Ready QA Done] made no writes
+  ✅ board [Ready Building Review Done] refuses
+  ✅ board [Ready Building Review Done] made no writes
+  ✅ refusal says why
+  ✅ holding column 'Backlog' is accepted
+  ✅ holding column 'Todo' is accepted
+  ✅ holding column 'To do' is accepted
+  ✅ holding column 'Triage' is accepted
+  ✅ holding column 'Inbox' is accepted
+  ✅ Backlog wins over Todo
+── PostHog tracking gap → one analytics feature ticket
+  ✅ gap plan line
+  ✅ gap files
+  ✅ routes via the QA filer as a feature
+  ✅ labels analytics
+  ✅ labels collect:posthog
+  ✅ labels source:collect
+  ✅ stamps gap fingerprint
+  ✅ stamps the source
+  ✅ lands in Backlog
+  ✅ never Ready
+  ✅ gap| needs a workflow key
+  ✅ gap| only for posthog
+── prs pattern ticket
+  ✅ prs| prefix required
+  ✅ pattern files once
+  ✅ files as tech-debt
+  ✅ labels collect:prs
+── dedupe matches the fingerprint exactly
+  ✅ Sentry 441 is not a duplicate of Sentry 4411
+── SKILL.md setup step 3: source the gh guard, then sb_gh_guard_check
+  ✅ gh guard works when sourced from zsh
+  ✅ gh guard works when sourced from bash
+
+passed: 62  failed: 0  known bugs (xfail): 0
+::endgroup::
+::group::tests/test-collect-custom.sh
+/private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpxl8hzpje/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/private/tmp/qa-pack-5b/tests/test_collect_custom.py:136: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpxl8hzpje/cfg.json' mode='r' encoding='UTF-8'>
+  cfg = json.load(open(self.cfg))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpzb2wa8q7/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/private/tmp/qa-pack-5b/tests/test_collect_custom.py:141: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpzb2wa8q7/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["status"], "custom": [
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpsv0fxjpo/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/private/tmp/qa-pack-5b/tests/test_collect_custom.py:162: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpsv0fxjpo/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"custom": [{"name": "linear", "kind": "mcp", "target": "linear",
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmphynhc_vy/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpc6830xrc/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/private/tmp/qa-pack-5b/tests/test_collect_custom.py:172: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpc6830xrc/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"custom": [{"name": "gone", "kind": "cli", "target": "no-such-binary-xyz --json"}]}},
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmptytszjc_/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpiz04jjx_/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpow3za43h/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpa_tih9tj/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmp1e9n5xwr/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/private/tmp/qa-pack-5b/tests/test_collect_custom.py:72: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmp1e9n5xwr/.mcp.json' mode='w' encoding='UTF-8'>
+  json.dump({"mcpServers": {"bugbase": {"command": "x"}}}, open(os.path.join(self.tmp, ".mcp.json"), "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/private/tmp/qa-pack-5b/tests/../skills/super-collect/scripts/collect_custom.py:67: ResourceWarning: unclosed file <_io.TextIOWrapper name='.mcp.json' mode='r' encoding='UTF-8'>
+  data = json.load(open(path))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmphxbfzqap/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpxw8t05ns/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpdvaj9qc4/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpjbpwwdxu/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmp_lul8_f6/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmp16nj6umi/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmp7jis6xk6/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+.
+----------------------------------------------------------------------
+Ran 17 tests in 0.025s
+
+OK
+::endgroup::
+::group::tests/test-collect-fetchers.sh
+................Sentry API 429 on /api/0/organizations/acme/issues/7/; retrying in 0s
+......
+----------------------------------------------------------------------
+Ran 22 tests in 0.007s
+
+OK
+::endgroup::
+::group::tests/test-collect-file.sh
+── arg validation
+  ✅ type is an enum
+  ✅ source is an enum
+  ✅ old intake source gone
+  ✅ fp must match source
+  ✅ gap only for posthog
+  ✅ custom fp must start custom|
+  ✅ fp prefix needs a key
+  ✅ fingerprint shape accepted for sentry
+  ✅ fingerprint shape accepted for posthog
+  ✅ fingerprint shape accepted for posthog
+  ✅ fingerprint shape accepted for github
+  ✅ fingerprint shape accepted for prs
+  ✅ fingerprint shape accepted for architecture
+  ✅ fingerprint shape accepted for custom
+  ✅ fingerprint required
+  ✅ fix needs Evidence
+  ✅ fix needs an AC checklist
+── dry-run is the default
+  ✅ plans, does not file
+  ✅ no issue create on dry-run
+── holding column, never Ready
+  ✅ falls back to another holding column
+  ✅ no holding column refuses
+── dedupe
+  ✅ open hit is a duplicate
+  ✅ --yes on duplicate returns existing
+  ✅ comments instead of filing
+  ✅ no duplicate card
+  ✅ closed-only hit is a recurrence
+── filing a bug through super-qa-file-bug.sh
+  ✅ returns the new issue
+  ✅ routes via the QA filer (source:qa label)
+  ✅ lands in Backlog
+  ✅ never Ready
+  ✅ stamps the fingerprint
+  ✅ labels source:collect
+── filing a prs fix (weak-body bypass, own section check)
+  ✅ returns the new issue
+  ✅ files as tech-debt
+  ✅ names the recurrence
+  ✅ never Ready
+── refactor with criteria still lands in Backlog (filer would pick Ready)
+  ✅ routes via the review filer
+  ✅ lands in Backlog
+  ✅ never Ready
+  ✅ labels collect:architecture
+── posthog bug with extra labels (needs-triage, ux)
+  ✅ returns the new issue
+  ✅ stamps posthog fingerprint
+  ✅ labels needs-triage
+  ✅ labels ux
+  ✅ labels collect:posthog
+  ✅ never Ready
+── adopt a user-filed issue
+  ✅ adopt dry-run
+  ✅ adopt returns the issue
+  ✅ adopt files nothing new
+  ✅ adopt places in Backlog
+── duplicate and adopt stop when the repository is paused
+  ✅ duplicate reports the paused run
+  ✅ duplicate makes no GitHub mutations while paused
+  ✅ adopt reports the paused run
+  ✅ adopt makes no GitHub mutations while paused
+── a pause discovered during a read stops the next write
+  ✅ duplicate propagates a pause after its read
+  ✅ duplicate preserves the existing issue identity after a pause
+  ✅ duplicate makes no mutations after the discovery pause
+  ✅ adopt propagates a pause after its read
+  ✅ adopt preserves the existing issue identity after a pause
+  ✅ adopt makes no mutations after the discovery pause
+── pauses during adoption stop labeling and placement
+  ✅ adoption pauses between label writes
+  ✅ mid-label pause preserves adopted issue
+  ✅ only the first pre-pause label mutation happened
+  ✅ placement pause stays exit 79
+  ✅ placement pause preserves adopted issue
+  ✅ placement pause prevents a column write
+
+passed: 66  failed: 0
+::endgroup::
+::group::tests/test-deps.sh
+PASS: test-deps.sh (18 scenarios)
+::endgroup::
+::group::tests/test-env-check.sh
+PASS: test-env-check.sh (5 scenarios)
+::endgroup::
+::group::tests/test-file-bug.sh
+── arg + enum validation
+  ✅ title required
+  ✅ body-file required
+  ✅ body-file must exist
+  ✅ kind is an enum
+  ✅ priority is an enum
+  ✅ category is an enum
+  ✅ owner is an enum
+── body guardrails
+  ✅ rejects a missing section
+  ✅ names the missing section
+  ✅ rejects <placeholder>
+  ✅ rejects TBD
+  ✅ escape hatch files it anyway
+  ✅ rejects AC without a checklist
+  ✅ says why
+  ✅ rejects Context without lettered steps
+  ✅ rejects arrows in steps
+  ✅ rejects an Evidence row missing
+  ✅ names the missing row
+  ✅ rejects an unfolded Evidence table
+── happy path
+  ✅ returns the issue number
+  ✅ board-readable title
+  ✅ labels the source
+  ✅ labels the priority
+  ✅ labels the qa category
+  ✅ labels the owner
+  ✅ lands in Bug column
+  ✅ prepends Board summary
+  ✅ appends Blocked by when absent
+  ✅ states no blocker explicitly
+  ✅ embeds the meta block
+  ✅ meta carries the spec
+── derived fingerprint is iteration-independent
+  ✅ same finding, later iter → same key
+── project resolution
+  ✅ halts when the QA project is absent
+  ✅ tells the operator what to do
+  ✅ honours SUPER_QA_PROJECT_TITLE
+  ✅ honours SUPER_QA_TARGET_OPTION_NAME
+── dedupe
+  ✅ returns the existing issue
+  ✅ comments the new sighting
+  ✅ files no duplicate card
+── uncertain placement pauses and preserves the created issue
+  ✅ number still reaches stdout
+  ✅ signals promote failure
+  ✅ says reconciliation is needed
+── required-read and uncertain-write failure
+  ✅ three failed dedupe reads halt
+  ✅ unreadable dedupe never writes
+  ✅ three dedupe attempts
+  ✅ uncertain comment outcome halts
+  ✅ comment is attempted once
+  ✅ failed comment does not report success ID
+
+48 passed, 0 failed
+::endgroup::
+::group::tests/test-file-refactor.sh
+── arg validation
+  ✅ fingerprint required
+  ✅ title required
+  ✅ config must exist
+  ✅ body-file must exist
+  ✅ strength is an enum
+── happy path
+  ✅ returns the new issue number
+  ✅ files render as a list
+  ✅ lands in Backlog, not Ready
+  ✅ labels the source
+  ✅ labels the strength
+  ✅ title in ticket format
+  ✅ refuses a body without Problem/Context/Fix
+── dedupe
+  ✅ returns the existing issue
+  ✅ comments instead of creating
+  ✅ no duplicate card created
+── the two machine-read sections, and where the card lands
+  ✅ appends Blocked by when absent
+  ✅ states None explicitly
+  ✅ appends a criteria placeholder
+  ✅ appends a Risk line
+  ✅ sends a bare note to the holding column
+  ✅ a card with criteria lands in Ready
+  ✅ does not duplicate a section the caller wrote
+  ✅ a bare note never falls back into Ready
+── degradation (must never fail the review)
+  ✅ still returns the issue number
+  ✅ warns about the missing column
+  ✅ says what the consequence is
+  ✅ files onto a Todo-column board
+  ✅ reports the alias it used
+  ✅ alias board places the card properly
+  ✅ files onto a To do-column board
+  ✅ reports the multi-word alias intact
+  ✅ survives a board failure
+  ✅ warns about placement
+── required-read and uncertain-write failure
+  ✅ three failed dedupe reads halt
+  ✅ unreadable dedupe never writes
+  ✅ three dedupe attempts
+  ✅ uncertain comment outcome halts
+  ✅ comment is attempted once
+  ✅ failed comment does not report success ID
+
+39 passed, 0 failed
+::endgroup::
+::group::tests/test-fork-wizard.sh
+PASS: test-fork-wizard.sh (6 checks)
+::endgroup::
+::group::tests/test-get.sh
+PASS: test-get.sh (10 cases)
+::endgroup::
+::group::tests/test-guard-hooks.sh
+PASS: test-guard-hooks.sh (82 cases)
+::endgroup::
+::group::tests/test-host.sh
+PASS: super-board-host
+::endgroup::
+::group::tests/test-install.sh
+PASS: test-install.sh (20 scenarios)
+::endgroup::
+::group::tests/test-merge-gate.sh
+PASS: test-merge-gate.sh (merge, policy and approval scenarios)
+::endgroup::
+::group::tests/test-pr-body.sh
+── replace one block, keep the rest
+  ✅ replace reports updated
+  ✅ new status written
+  ✅ old status gone
+  ✅ problem block untouched
+── idempotent
+  ✅ same content twice is a no-op
+  ✅ no edit call on a no-op
+── missing block inserted in order
+  ✅ risk inserted
+  ✅ risk lands after history
+  ✅ solution lands between problem and history
+── append a history row, once
+  ✅ row appended
+  ✅ re-append is a no-op
+  ✅ row appears once
+── refuses when the head moved
+  ✅ moved head exits 6
+  ✅ no edit on a moved head
+  ✅ body unchanged
+── usage
+  ✅ expect-head required
+  ✅ block is an enum
+  ✅ content file required
+  ✅ dry run prints the body
+  ✅ dry run edits nothing
+── skeleton
+  ✅ skeleton has status
+  ✅ skeleton has problem
+  ✅ skeleton has solution
+  ✅ skeleton has ac
+  ✅ skeleton has history
+  ✅ skeleton has visual
+  ✅ skeleton has risk
+── time in config timezone
+  ✅ time carries the zone
+
+28 passed, 0 failed
+::endgroup::
+::group::tests/test-preflight.sh
+PASS: test-preflight.sh (10 scenarios)
+::endgroup::
+::group::tests/test-readme-sync.sh
+PASS: test-readme-sync.sh (6 scenarios)
+::endgroup::
+::group::tests/test-registry.sh
+registry ok: every vendored skill mapped or anytime, every mapping vendored
+PASS: test-registry.sh
+::endgroup::
+::group::tests/test-release.sh
+PASS: test-release.sh (matching tags, moved/missing tags, checkout, version, arguments, failure)
+::endgroup::
+::group::tests/test-run-gates.sh
+── done_signature (#8: progress = landed work)
+  ✅ counts only Done
+  ✅ Blocked is not landed work
+  ✅ nothing landed → empty signature
+
+── card_lane (v3.0.0: a qa label skips Building)
+  ✅ qa label → Tester
+  ✅ bug label → Builder
+  ✅ qa label on the content → Tester
+  ✅ no label → Builder
+
+── record_cycle_progress (#8: halt is independent of lane occupancy)
+  ✅ cycle 1 of 3 → keep running
+  ✅ cycle 2 of 3 → keep running
+  ✅ cycle 3 of 3 → HALT even though no lane state was consulted
+  ✅ no card counted as landed
+  ✅ a card reaching Done → no halt
+  ✅ counter reset after progress
+  ✅ landed count incremented
+  ✅ stall after progress still halts
+
+── dispatch_ceiling_hit (#8: bounded worst-case spend)
+  ✅ 0 disables the ceiling
+  ✅ under the ceiling → keep running
+  ✅ at the ceiling → halt
+
+── issue_is_open (#10)
+  ✅ known-closed issue reads CLOSED
+  ✅ open issue reads OPEN
+
+── top_card_in_column (#10: closed cards are reconciled, never dispatched)
+  ✅ a dispatchable card was found
+  ✅ skips the closed card, returns the next open one
+  ✅ closed card reconciled to Done via a name-resolved option ID
+  ✅ open card in Review is returned unchanged
+  ✅ all-closed column reports no dispatchable card (non-zero)
+  ✅ all-closed column yields no card number
+
+── dispatch_lane (#10: the guard holds at the single choke point)
+  ✅ no worker dispatched for a CLOSED issue
+  ✅ closed issue is not claimed either
+
+── status_option_id (#6 class of failure: resolve by name, fail loud)
+  ✅ resolves the live Status field id
+  ✅ resolves 'Done' by name at runtime
+  ✅ unknown option name fails loud (non-zero)
+  ✅ unknown option name emits nothing
+
+── reclaim_stranded_building (run start: Building with no live worker → Ready)
+  ✅ unassigned and bot-only Building cards move to Ready
+  ✅ a human-assigned Building card is left alone
+  ✅ a card with a live in-flight lock is left alone
+  ✅ Ready cards are untouched
+  ✅ every moved card gets a comment
+  ✅ the leaked bot claim is released
+
+
+38 passed, 0 failed
+::endgroup::
+::group::tests/test-safety-runner.sh
+PASS: test-safety-runner.sh (empty, failure, continuation, success)
+::endgroup::
+::group::tests/test-sets.sh
+PASS: sets switch (round trip, diff, nested, custom, dry-run, refusals, config resolution)
+::endgroup::
+::group::tests/test-settings.sh
+PASS: test-settings.sh (3 scenarios)
+::endgroup::
+::group::tests/test-setup.sh
+PASS: test-setup.sh (12 scenarios)
+::endgroup::
+::group::tests/test-skill-set-add.sh
+registry ok: every vendored skill mapped or anytime, every mapping vendored
+PASS: test-registry.sh
+skill-set-add: vendored 2 skills from https://github.com/example/tiny-skills → skill-sets/tiny (license MIT, pinned 36dd3c26d9dd; carried LICENSE, NOTICE.md)
+skill-set-add: vendored 2 skills from https://github.com/example/tiny-skills → skill-sets/tiny (license MIT, pinned 36dd3c26d9dd; carried LICENSE, NOTICE.md)
+skill-set-add: vendored 1 skills from https://github.com/example/flat-skills → skill-sets/flatpack (license MIT, pinned vendored 2026-10-31; carried LICENSE)
+PASS: skill-set-add (5 checks)
+::endgroup::
+::group::tests/test-skill-set-sync.sh
+skill-set-add: vendored 2 skills from /var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmp.nKir98wM9X/tiny-skills → skill-sets/tiny (license MIT, pinned 067a6ec4e20c; carried LICENSE, NOTICE.md)
+skill-set-add: vendored 1 skills from /var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmp.nKir98wM9X/flat-skills → skill-sets/solo (license MIT, pinned a9ed95d011e6; carried no license files)
+PASS: skill-set-sync (8 checks)
+::endgroup::
+::group::tests/test-throttle.sh
+PASS: test-throttle.sh (graphql reading, ladder, floor, lane failures, dry-run)
+::endgroup::
+::group::tests/test-ui-refine-loop-setup.sh
+  ✅ pm from lockfile
+  ✅ next gets --port
+  ✅ checks from scripts
+  ✅ env files found
+  ✅ no auth by default
+  ✅ default state
+  ✅ rubric without impeccable
+  ✅ rounds default
+  ✅ no qaHookRounds
+  ✅ missing impeccable warns in JSON
+  ✅ missing impeccable warns on stderr
+  ✅ taste default per project
+  ✅ taste not yet written
+  ✅ npm start, no flag
+  ✅ placeholder test dropped
+  ✅ npm vite port
+  ✅ verify_commands fallback
+  ✅ active config found
+  ✅ dev_command override
+  ✅ ready_path override
+  ✅ check_commands override
+  ✅ auth_script passthrough
+  ✅ states passthrough
+  ✅ rounds override (qa_hook_rounds ignored)
+  ✅ taste_file override
+  ✅ env_files override
+  ✅ impeccable under ~
+  ✅ launcher layout
+  ✅ launcher version
+  ✅ launcher detect cmd
+  ✅ launcher context cmd
+  ✅ no warnings with impeccable
+  ✅ node layout
+  ✅ node version
+  ✅ node detect cmd
+  ✅ node context cmd
+  ✅ found in parent dir
+  ✅ launcher preferred
+  ✅ refine.impeccable → script file
+  ✅ bad refine.impeccable warns
+  ✅ bad refine.impeccable banner
+  ✅ falls back to the search
+  ✅ unknown verb exits 64
+  ✅ down without --run exits 64
+  ✅ up without --slug exits 64
+  ✅ qa-hook --worktree is gone (64)
+  ✅ shoot parseStates
+  ✅ shoot usage error exits 1
+  ✅ shoot themes + compare names
+  ✅ shots committed
+  ✅ header names both shas
+  ✅ 8 images on the branch
+  ✅ raw URL pinned to sha
+  ✅ table has mobile dark row
+  ✅ no public upload hosts
+  ✅ missing shot says not shot
+  ✅ pr-shots usage exits 64
+  ✅ non-GitHub remote exits 70
+
+test-ui-refine-loop-setup.sh: 58 passed, 0 failed
+::endgroup::
+::group::tests/test-ui-refine-loop-workflow.sh
+PASS: test-ui-refine-loop-workflow.sh (14 scenarios)
+::endgroup::
+::group::tests/test-usage.sh
+PASS: test-usage.sh (10 scenarios)
+::endgroup::
+::group::tests/test-wave-plan.sh
+PASS: test-wave-plan.sh (19 scenarios)
+::endgroup::
+::group::tests/test-wave-preflight.sh
+PASS: test-wave-preflight.sh (10 scenarios)
+::endgroup::
+::group::tests/test-wave-review-memory.sh
+PASS: test-wave-review-memory.sh (3 scenarios)
+::endgroup::
+::group::tests/test-workflow-halt.sh
+PASS: workflow halt propagation (5 scenarios)
+::endgroup::
+::group::tests/test_approval.py
+.........................
+----------------------------------------------------------------------
+Ran 25 tests in 1.168s
+
+OK
+::endgroup::
+::group::tests/test_collect_baseline.py
+.....................
+----------------------------------------------------------------------
+Ran 21 tests in 0.023s
+
+OK
+::endgroup::
+::group::tests/test_collect_custom.py
+/private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmp9a7oai7c/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/private/tmp/qa-pack-5b/tests/test_collect_custom.py:136: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmp9a7oai7c/cfg.json' mode='r' encoding='UTF-8'>
+  cfg = json.load(open(self.cfg))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpahbrn2p_/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/private/tmp/qa-pack-5b/tests/test_collect_custom.py:141: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpahbrn2p_/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["status"], "custom": [
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmp477x6mmm/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/private/tmp/qa-pack-5b/tests/test_collect_custom.py:162: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmp477x6mmm/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"custom": [{"name": "linear", "kind": "mcp", "target": "linear",
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmp2oaa86y_/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpf545saxj/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/private/tmp/qa-pack-5b/tests/test_collect_custom.py:172: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpf545saxj/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"custom": [{"name": "gone", "kind": "cli", "target": "no-such-binary-xyz --json"}]}},
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpb76ozrud/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmp5wjr0kdg/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmp328_7ou0/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpoai003sg/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpobud3dvg/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/private/tmp/qa-pack-5b/tests/test_collect_custom.py:72: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpobud3dvg/.mcp.json' mode='w' encoding='UTF-8'>
+  json.dump({"mcpServers": {"bugbase": {"command": "x"}}}, open(os.path.join(self.tmp, ".mcp.json"), "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/private/tmp/qa-pack-5b/tests/../skills/super-collect/scripts/collect_custom.py:67: ResourceWarning: unclosed file <_io.TextIOWrapper name='.mcp.json' mode='r' encoding='UTF-8'>
+  data = json.load(open(path))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpd94o8akn/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpkkqa73o9/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmppsx_ou_l/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpf4trw7y7/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmp0suwtkv4/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmpk429krh9/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+./private/tmp/qa-pack-5b/tests/test_collect_custom.py:50: ResourceWarning: unclosed file <_io.TextIOWrapper name='/var/folders/rl/dqkc_c0j01567h1rttvfw7yh0000gn/T/tmp9rx2di9x/cfg.json' mode='w' encoding='UTF-8'>
+  json.dump({"collect": {"sources": ["github"]}}, open(self.cfg, "w"))
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+.
+----------------------------------------------------------------------
+Ran 17 tests in 0.026s
+
+OK
+::endgroup::
+::group::tests/test_collect_fetchers.py
+................Sentry API 429 on /api/0/organizations/acme/issues/7/; retrying in 0s
+......
+----------------------------------------------------------------------
+Ran 22 tests in 0.008s
+
+OK
+::endgroup::
+::group::tests/test_github_reads.py
+..................
+----------------------------------------------------------------------
+Ran 18 tests in 7.203s
+
+OK
+::endgroup::
+::group::tests/test_status_parse.py
+  ok  test_dispatch_line_from_real_dispatcher
+  ok  test_dispatch_all_three_lanes
+  ok  test_unknown_lane_is_ignored
+  ok  test_reap_swept_assignee_variant
+  ok  test_reap_bare_for_variant
+  ok  test_reap_with_empty_pid
+  ok  test_reap_drops_inflight_entry_by_pid
+  ok  test_lane_handoff_drops_prior_inflight
+  ok  test_tick_and_exited_tracked
+  ok  test_zombie_and_alert
+  ok  test_empty_manifest_returns_defaults
+  ok  test_real_live_manifest_lines
+  ok  test_attempt_str_from_rebuild_label
+  ok  test_field_status_picks_status_select
+  ok  test_valid_slug_accepts_normal_slugs
+  ok  test_valid_slug_rejects_path_traversal
+  ok  test_sanitize_title_strips_c0_and_del
+  ok  test_paginate_items_single_page
+  ok  test_paginate_items_multi_page
+  ok  test_paginate_items_respects_max_pages
+  ok  test_paginate_items_handles_missing_keys
+  ok  test_paginate_items_stops_when_cursor_missing
+  ok  test_board_order_matches_github_columns
+  ok  test_render_kanban_prints_boxes_in_board_order
+  ok  test_render_kanban_backlog_overflow_truncates
+
+25/25 passed.
+::endgroup::
+::group::tests/test_upgrade_recovery.py
+..........................
+----------------------------------------------------------------------
+Ran 26 tests in 10.522s
+
+OK
+::endgroup::
+::group::tests/test_visual_chrome_cleanup.py
+..
+----------------------------------------------------------------------
+Ran 2 tests in 0.267s
+
+OK
+::endgroup::
+::group::tests/test_visual_details.py
+PASS: test_visual_details.py (134 nodes, 3 detail tabs each)
+::endgroup::
+::group::tests/test_visual_families.py
+PASS: test_visual_families.py (nested boxes, physical clicks, readable rows, animated navigation)
+::endgroup::
+::group::tests/test_visual_interactions.py
+PASS: test_visual_interactions.py (normal and reduced motion)
+::endgroup::
+::group::tests/test_visual_lanes.py
+PASS: test_visual_lanes.py
+::endgroup::
+::group::tests/test_visual_main_steps.py
+PASS: test_visual_main_steps.py (134 reachable nodes, 57 views)
+::endgroup::
+::group::tests/test_visual_source_base.py
+PASS: test_visual_source_base.py
+::endgroup::
+::group::tests/test_worktree_paths.py
+........
+----------------------------------------------------------------------
+Ran 8 tests in 1.960s
+
+OK
+::endgroup::
+::group::tests/test_writing_format.py
+  ✅ test_block_template_uses_the_header
+  ✅ test_bug_filer_matches_the_standard
+  ✅ test_comment_examples_follow_the_header
+  ✅ test_comment_header_regex
+  ✅ test_dispatcher_greps_the_standard_loop_subjects
+  ✅ test_emoji_map_matches_standard
+  ✅ test_needs_you_comment_is_checklist_first
+  ✅ test_no_old_commit_shapes_in_templates
+  ✅ test_pr_body_markers
+  ✅ test_standard_examples_are_valid_subjects
+  ✅ test_status_alerts
+  ✅ test_subject_regex
+  ✅ test_ticket_template_has_required_sections_in_order
+  ✅ test_ticket_title_shape
+
+14/14 passed.
+::endgroup::
+PASS: 56 safety suites
+skill-set-sync: pstack @ https://github.com/michael-denyer/pstack-claude
+  pin: 190fc9a009491cbcfc04e25ef5b3c2d1fcf5ca8a → 5851c89613e2ddc3a6b7f4af02a42363b30ef8d3 (registry.json + UPSTREAM.md)
+  added: none
+  updated: architect, arena, how, interrogate, poteto-mode, reflect, setup-pstack, swarm, why
+  removed: none
+  registry.json: pinned_ref → 5851c89613e2ddc3a6b7f4af02a42363b30ef8d3
+  UPSTREAM.md pin row 16 → 5851c89613e2
+skill-set-sync: pstack synced to 5851c89613e2
+sync exit=0
+
+## 3. effects
+registry pinned_ref: 5851c89613e2ddc3a6b7f4af02a42363b30ef8d3
+UPSTREAM.md row 16 now: | pstack (Claude port) | [michael-denyer/pstack-claude](https://github.com/michael-denyer/pstack-claude) | `5851c89613e2...
+files changed: 16 (13 modified in .agents/skills/, 1 new upstream file poteto-mode/scripts/codex-session-effort.mjs, registry.json, UPSTREAM.md)
+set symlinks unchanged: ../../.agents/skills/how (points at the same .agents/skills store)

@@ -7,11 +7,12 @@
 # Options (everything else that starts with "-" goes straight to install.sh):
 #   --target <dir>        project to install into (default: the current folder)
 #   --ref <tag|branch>    which version to fetch (default: the latest release)
-#   --no-helper-skills    install no vendored skill sets (default: mattpocock)
+#   --no-helper-skills    install no vendored skill sets (default: all vendored sets)
 #   -h, --help            show this help
 # Passed through to install.sh: --no-hooks, --protect-main, --sets=a,b,
-# --hosts=a,b (skill sets and agent CLIs; onboard can also be run with
-# --sets/--agents instead of answering its questions).
+# --hosts=a,b (skill sets and agent CLIs). Onboard's own flag is --set=<one set>
+# (deprecated alias: --sets) — install.sh's --sets is the comma list. Onboard can
+# also be run with --set/--agents instead of answering its questions.
 #
 # Environment:
 #   SUPER_BOARD_REF       same as --ref
@@ -28,7 +29,7 @@ warn() { printf '⚠️  %s\n' "$*" >&2; }
 die()  { printf '❌ %s\n' "$*" >&2; exit "${2:-1}"; }
 have() { command -v "$1" >/dev/null 2>&1; }
 
-usage() { sed -n '2,21p' "${BASH_SOURCE[0]:-$0}" 2>/dev/null | sed 's/^# \{0,1\}//' || true; }
+usage() { sed -n '2,22p' "${BASH_SOURCE[0]:-$0}" 2>/dev/null | sed 's/^# \{0,1\}//' || true; }
 
 main() {
   local target="" ref="${SUPER_BOARD_REF:-}"
@@ -135,9 +136,9 @@ except Exception: print("")' 2>/dev/null || true)"
   SUPER_BOARD_QUIET_NEXT=1 bash "$src/install.sh" ${pass[@]+"${pass[@]}"} "$target" || die "install.sh stopped with an error (see above). Nothing else was changed after that point." 1
 
   # --- skill sets -------------------------------------------------------
-  # install.sh installed the chosen vendored skill sets (mattpocock by default)
-  # into .agents/skills and printed one ✓ line per set above — no npx, no
-  # network. Its record lands in .agents/skill-sets.json.
+  # install.sh installed the chosen vendored skill sets (all of them by default;
+  # --sets=<list> narrows) into .agents/skills and printed one ✓ line per set
+  # above — no npx, no network. Its record lands in .agents/skill-sets.json.
   local sets_note="installed → .agents/skills (record: .agents/skill-sets.json)"
   case " ${pass[*]-} " in *" --no-helper-skills "*) sets_note="skipped (--no-helper-skills)" ;; esac
 

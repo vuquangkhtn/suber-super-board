@@ -28,7 +28,7 @@ git merge upstream/main          # conflicts stay inside the files we forked
 - `scripts/super-board-agents-md.py` — new `skill-map` subcommand (AGENTS.md block +
   `.claude/super-board/skill-map.json`).
 - `skills/super-board/references/onboard.md` — wizard grows from 8 to 10 steps
-  (🧩 Skills, 🤖 Agents); `--sets` / `--agents` parameters.
+  (🧩 Skills, 🤖 Agents); `--set` (deprecated alias `--sets`) / `--agents` parameters.
 - `skills/super-board/references/config-schema.json` — `skill_sets`, `agents`,
   `other_agents` keys.
 - New: `skill-sets/` (the three vendored sets + `registry.json` step mappings).
