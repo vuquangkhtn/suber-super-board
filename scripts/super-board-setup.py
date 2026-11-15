@@ -81,7 +81,7 @@ OLD_LABELS = {
     "bug-fix": "bug", "bugfix": "bug", "type:bug": "bug", "kind:bug": "bug",
     "qa-only": "qa", "type:qa": "qa", "kind:qa": "qa",
 }
-SKILLS = ["super-board", "super-build", "super-qa", "super-review", "super-collect", "visual", "git-sync", "ui-refine-loop"]
+SKILLS = ["super-board", "super-build", "super-qa", "super-review", "super-collect", "super-plan", "visual", "git-sync", "ui-refine-loop"]
 OLD_SKILL_DIRS = ["super-refine", "cleanup-wt", "arch-loop"]
 BIN = ["super-board-github-read.py", "super-board-run.sh", "super-board-gh-guard.sh", "super-board-card.sh", "super-board-status.py", "super-board-wave-plan.sh",
        "super-board-deps.sh", "super-board-preflight.sh", "super-board-merge-gate.sh",
