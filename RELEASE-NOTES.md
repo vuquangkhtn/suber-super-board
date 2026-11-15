@@ -1,5 +1,20 @@
 # Release notes
 
+## v3.2.1 — 2026-11-15
+
+Patch fix: the installer now ships `/super-plan`.
+
+- 🐛 **`/super-plan` ships to targets.** The skill landed in the pack on 2026-11-06
+  (PRs #21–#23) but `install.sh`'s hardcoded skill lists never gained it, so every
+  target install silently skipped it — the repo itself still showed the skill only
+  because its `.claude/skills/` symlinks into `.agents/skills/`. Fixed in all four
+  enumeration sites: `install.sh` (`SECONDARY_SKILLS`), onboard's checks
+  (`scripts/super-board-setup.py` now expects it and flags missing copies on targets
+  installed before this fix), and the `test-install.sh` / `test-get.sh` layout
+  assertions. The stale AGENTS.md skills intro is corrected too (eleven skills:
+  six you-type shipped, two pack-authoring helpers, three board lanes).
+  60 offline suites green.
+
 ## v3.2.0 — 2026-11-05
 
 The fork-superset release: three vendored skill sets, multi-agent install, and a
