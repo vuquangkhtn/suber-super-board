@@ -153,4 +153,72 @@ RC=0; OUT=$(am skill-map --root "$SM2" --named pstack 2>&1 >/dev/null) || RC=$?
 [ "$RC" -eq 2 ] || fail "missing record should be refused (2), got $RC"
 echo "$OUT" | grep -q "run install.sh with --sets first" || fail "the error should name the fix: $OUT"
 
-echo "PASS: test-agents-md.sh (15 scenarios)"
+# 16 — registry is truth for every installed set, including local generated maps.
+python3 - "$AM" "$T" <<'PYGUARD'
+import importlib.util
+import json
+from pathlib import Path
+import re
+import subprocess
+import sys
+
+script, temp = map(Path, sys.argv[1:])
+repo = script.resolve().parent.parent
+registry = json.loads((repo / "skill-sets/registry.json").read_text())
+spec = importlib.util.spec_from_file_location("agents_md", script)
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+
+
+def check(mapping):
+    for name, entry in mapping["sets"].items():
+        expected = registry["sets"][name].get("steps", {})
+        assert entry["steps"] == expected, f"{name}: generated set steps differ from registry"
+    for step, entry in mapping["steps"].items():
+        if entry["set"]:
+            expected = registry["sets"][entry["set"]].get("steps", {}).get(step, [])
+            assert entry["skills"] == expected, f"{entry['set']}/{step}: generated skills differ from registry"
+
+
+# Exercise the real generator for each registry set, even on a fresh clone.
+root = temp / "registry-map"
+(root / ".agents").mkdir(parents=True)
+record = {"version": 1, "sets": [dict(meta, name=name) for name, meta in registry["sets"].items()]}
+(root / ".agents/skill-sets.json").write_text(json.dumps(record))
+(root / "AGENTS.md").write_text("User rules above.\n")
+for name in registry["sets"]:
+    subprocess.run([sys.executable, str(script), "skill-map", "--root", str(root),
+                    "--named", name], check=True, stdout=subprocess.DEVNULL)
+    mapping = json.loads((root / ".claude/super-board/skill-map.json").read_text())
+    check(mapping)
+    text = (root / "AGENTS.md").read_text()
+    assert text.startswith("User rules above.\n")
+    for step, entry in mapping["steps"].items():
+        row = f"| {module.STEP_TITLES[step]} | {name} | {', '.join(entry['skills']) or '—'} |"
+        assert row in text, row
+    # A missing skill in any active step must trip the guard.
+    for step, entry in mapping["steps"].items():
+        if entry["skills"]:
+            bad = json.loads(json.dumps(mapping))
+            bad["steps"][step]["skills"].pop()
+            try:
+                check(bad)
+            except AssertionError:
+                pass
+            else:
+                raise AssertionError(f"guard missed drift in {name}/{step}")
+
+# The published managed rows must agree even when local artifacts are absent.
+shipped = (repo / "AGENTS.md").read_text().split("<!-- super-board:skill-map begin (managed) -->")[1].split("<!-- super-board:skill-map end -->")[0]
+for title, name, skills in re.findall(r"^\| (\w+) \| ([\w-]+) \| (.*?) \|$", shipped, re.M):
+    if title.lower() in registry["lifecycle_steps"] and name in registry["sets"]:
+        expected = registry["sets"][name].get("steps", {}).get(title.lower(), [])
+        assert skills == (", ".join(expected) or "—"), f"AGENTS.md: {name}/{title} differs from registry"
+
+# Local install artifacts are optional; CI clones have neither file.
+local = repo / ".claude/super-board/skill-map.json"
+if local.is_file():
+    check(json.loads(local.read_text()))
+PYGUARD
+
+echo "PASS: test-agents-md.sh (16 scenarios)"
