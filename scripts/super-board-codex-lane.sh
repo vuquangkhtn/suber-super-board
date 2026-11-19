@@ -103,6 +103,7 @@ Source .claude/bin/super-board-gh-guard.sh and use its quota checks. Required Gi
 Use .claude/bin/super-board-card.sh for board reads/moves and .claude/bin/super-board-pr-body.sh for owned PR blocks; follow writing-standard.md and pr-author-notes.md.
 Use your own worktree under .claude/worktrees/; never edit the main checkout. Clean up on ordinary exit, preserve work on halt/interruption.
 Codex adaptation: do not launch Claude or other sub-agents. Perform preflight, classification, independent review and truth-check duties inline. This changes the execution host, never the evidence requirements, confidence threshold or merge policy.
+Verify evidence exception: this lane's sandbox kills Chromium at startup (exit -6), so suites that launch a browser cannot run inside it. When the issue carries an [orchestrator] verify comment recording verify_commands run outside the sandbox at the exact head you are testing (head sha plus exit code), treat that recorded evidence as authoritative; do not re-run the sandbox-hostile suites; run every other targeted check normally. Never treat verify evidence as valid when its recorded head sha differs from the head you are testing.
 Return JSON: status=advanced|bounced|blocked|human-gate|failed|halted; column=current board column; detail=one line; prUrl/branch when known, otherwise null; priorFindings=review counts or null. A non-advanced exit ends this card's lane chain.
 '''
 if args.lane == 'build':
