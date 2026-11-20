@@ -144,9 +144,9 @@ Machine-readable map: `.claude/super-board/skill-map.json` · install record: `.
 
 | Step | Set | Skills |
 |---|---|---|
-| Plan | pstack | how, why, figure-it-out, show-me-your-work |
+| Plan | pstack | how, why, teach, figure-it-out, show-me-your-work |
 | Design | pstack | architect, arena, interrogate |
-| Build | pstack | typescript-best-practices, deslop, no-comments |
+| Build | pstack | tdd, typescript-best-practices, deslop, no-comments |
 | Test | pstack | create-verification-skill, swarm, blast-radius, benchmark-checklist, interrogate, thermo-nuclear-code-quality-review |
 | Deploy | pstack | make-pr-easy-to-review, babysit, fix-merge-conflicts, get-pr-comments, fix-ci |
 | Maintain | pstack | — |
