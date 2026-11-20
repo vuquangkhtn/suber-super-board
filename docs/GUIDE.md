@@ -230,6 +230,8 @@ are scheduled.
 
 ## 9. Skill sets
 
+See [Skill routing](SKILL-ROUTING.md) for command routing and the three per-set diagrams.
+
 Three vendored sets ship in `skill-sets/` (pinned copies, no network at install time):
 `mattpocock` (27 skills), `pstack` (66), `agent-skills` (25). `skill-sets/registry.json` is
 the single source of truth for each set's step mapping.
