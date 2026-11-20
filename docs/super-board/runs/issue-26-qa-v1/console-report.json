@@ -1,0 +1,8 @@
+{
+  "pages": {
+    "pstack": [],
+    "mattpocock": [],
+    "agent-skills": []
+  },
+  "note": "console.error + uncaught exceptions observed during full render + interaction probe, Chrome 141 headless"
+}

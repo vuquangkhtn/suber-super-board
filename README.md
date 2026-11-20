@@ -103,6 +103,8 @@ Side doors while the board is idle:
 
 ## Skill-set → lifecycle mapping
 
+See [Skill routing](docs/SKILL-ROUTING.md) for the four routing paths and per-set diagrams.
+
 Each set's default mapping (curated; pstack's comes straight from the
 [pstack map](https://erictechpro.github.io/super-board/pstack/)) lives in
 [`skill-sets/registry.json`](skill-sets/registry.json):
